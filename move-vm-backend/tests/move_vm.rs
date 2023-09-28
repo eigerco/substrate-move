@@ -10,8 +10,23 @@ use move_core_types::identifier::Identifier;
 pub mod mock;
 
 #[test]
-fn load_module_test() {
+fn load_module_stdlib_test() {
+    let store = MoveStorage::new(StorageMock::new());
+    let vm = Mvm::new(store).unwrap();
 
+    // or 0x1::ascii is under 0x1 address?
+    let addr : [u8; 32]  = [0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0];
+
+    let module_id = ModuleId::new(
+        AccountAddress::new(addr),
+        Identifier::new("bcs").unwrap(),
+    );
+
+    let result = vm.load_module(&module_id);
+
+    println!("{:?}", result);
+    assert!(result.is_ok());
 }
 
 #[test]

@@ -11,10 +11,10 @@ description = "MoveVM backend to be used with Substrate pallet"
 [dependencies]
 anyhow = "1.0.75"
 move-binary-format = { path = "../language/move-binary-format", default-features = false }
-move-core-types = { path = "../language/move-core/types", default-features = false }
+move-core-types = { path = "../language/move-core/types", default-features = false, features = ["address32"] }
 move-vm-runtime = { path = "../language/move-vm/runtime", default-features = false }
 move-vm-types = { path = "../language/move-vm/types", default-features = false }
-move-stdlib = { path = "../language/move-stdlib", default-features = false }
+move-stdlib = { path = "../language/move-stdlib", default-features = false, features = ["address32"] }
 
 [features]
 default = ["std"]
