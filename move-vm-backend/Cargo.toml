@@ -15,6 +15,10 @@ move-core-types = { path = "../language/move-core/types", default-features = fal
 move-vm-runtime = { path = "../language/move-vm/runtime", default-features = false }
 move-vm-types = { path = "../language/move-vm/types", default-features = false }
 move-stdlib = { path = "../language/move-stdlib", default-features = false, features = ["address32"] }
+move-vm-test-utils = { path = "../language/move-vm/test-utils", default-features = false }
+
+[dev-dependencies]
+move-vm-test-utils = { path = "../language/move-vm/test-utils", default-features = false }
 
 [features]
 default = ["std"]

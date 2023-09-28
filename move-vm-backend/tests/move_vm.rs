@@ -1,32 +1,19 @@
 use crate::mock::{StorageMock};
 
 use move_vm_backend::Mvm;
-use move_vm_backend::storage::MoveStorage;
+use move_vm_backend::storage::{MoveStorage, Storage};
 
 use move_core_types::account_address::AccountAddress;
 use move_core_types::language_storage::ModuleId;
 use move_core_types::identifier::Identifier;
 
+use move_vm_test_utils::gas_schedule::GasStatus;
+
 pub mod mock;
 
 #[test]
-fn load_module_stdlib_test() {
-    let store = MoveStorage::new(StorageMock::new());
-    let vm = Mvm::new(store).unwrap();
+fn load_module_test() {
 
-    // or 0x1::ascii is under 0x1 address?
-    let addr : [u8; 32]  = [0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-        0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0];
-
-    let module_id = ModuleId::new(
-        AccountAddress::new(addr),
-        Identifier::new("bcs").unwrap(),
-    );
-
-    let result = vm.load_module(&module_id);
-
-    println!("{:?}", result);
-    assert!(result.is_ok());
 }
 
 #[test]
@@ -44,8 +31,44 @@ fn load_module_not_found_test() {
     assert!(result.is_err());
 }
 
-
-    #[test]
+#[test]
 fn publish_module_test() {
+    let store = MoveStorage::new(StorageMock::new());
+    let vm = Mvm::new(store).unwrap();
 
+    let addr : [u8; 32]  = [0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xCA, 0xFE];
+
+    let module =
+        include_bytes!("assets/move/build/move/bytecode_modules/Empty.mv").to_vec();
+
+    let mut gas_status = GasStatus::new_unmetered();
+
+    let result = vm.publish_module(
+        module.as_slice(),
+        AccountAddress::new(addr),
+        &mut gas_status);
+
+    assert!(result.is_ok());
+}
+
+#[test]
+fn publish_inmemstorage_module_test() {
+    let store = MoveStorage::new(StorageMock::new());
+    let vm = Mvm::new(store).unwrap();
+
+    let addr : [u8; 32]  = [0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
+        0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xCA, 0xFE];
+
+    let module =
+        include_bytes!("assets/move/build/move/bytecode_modules/Empty.mv").to_vec();
+
+    let mut gas_status = GasStatus::new_unmetered();
+
+    let result = vm.publish_module_inmemstorage(
+        module.as_slice(),
+        AccountAddress::new(addr),
+        &mut gas_status);
+
+    assert!(result.is_ok());
 }
