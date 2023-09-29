@@ -18,6 +18,7 @@ use move_core_types::account_address::AccountAddress;
 
 use move_core_types::language_storage::{CORE_CODE_ADDRESS, ModuleId};
 use move_core_types::resolver::{ModuleResolver, ResourceResolver};
+use move_core_types::effects::Op::{New, Modify, Delete};
 use move_vm_runtime::move_vm::MoveVM;
 
 use move_stdlib::natives::{all_natives, GasParameters};
@@ -79,7 +80,20 @@ impl<S> Mvm<S>
         println!("addr content: {:?}", &self.storage.get(&addr));   // Testing code
 
         sess.publish_module(module.to_vec(), address, gas)?;
-        sess.finish()?;
+        let (changeset, _) = sess.finish()?;
+
+        for module in changeset.modules().into_iter() {
+            match module.2 {
+                New(data) | Modify(data) => {
+                    self.storage.set(module.0.as_slice(), data);
+                    println!("New module: {:?}", data);
+                }
+                Delete => {
+                    self.storage.remove(module.0.as_slice());
+                    println!("Delete module");
+                }
+            }
+        }
 
         println!("addr content: {:?}", &self.storage.get(&addr));   // Testing code
 
@@ -96,11 +110,13 @@ impl<S> Mvm<S>
             Identifier::new("Empty").unwrap(),
         );
 
-        let test_storage = InMemoryStorage::new();
+        let mut test_storage = InMemoryStorage::new();
         let mut sess = self.vm.new_session(&test_storage);
 
         sess.publish_module(module.to_vec(), address, gas)?;
-        sess.finish()?;
+        let (changeset, _) = sess.finish()?;
+
+        test_storage.apply(changeset).unwrap();
 
         println!("module content: {:?}", &test_storage.get_module(&moduleId));   // Testing code
 
