@@ -89,13 +89,13 @@ where
             anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
         })?;
 
-        for module in changeset.modules() {
-            match module.2 {
+        for (account, _, operation) in changeset.modules() {
+            match operation {
                 New(data) | Modify(data) => {
-                    self.storage.set(module.0.as_slice(), data);
+                    self.storage.set(account.as_slice(), data);
                 }
                 Delete => {
-                    self.storage.remove(module.0.as_slice());
+                    self.storage.remove(account.as_slice());
                 }
             }
         }

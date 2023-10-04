@@ -7,13 +7,13 @@ use move_vm_backend::storage::Storage;
 // Mock storage implementation for testing
 #[derive(Clone, Debug)]
 pub struct StorageMock {
-    pub data: Rc<RefCell<HashMap<Vec<u8>, Vec<u8>>>>,
+    pub data: RefCell<HashMap<Vec<u8>, Vec<u8>>>,
 }
 
 impl StorageMock {
     pub fn new() -> StorageMock {
         StorageMock {
-            data: Rc::new(RefCell::new(Default::default())),
+            data: RefCell::new(Default::default()),
         }
     }
 }
