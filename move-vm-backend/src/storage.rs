@@ -28,7 +28,7 @@ pub struct MoveStorage<S: Storage> {
 
 impl<S: Storage> Storage for MoveStorage<S> {
     fn get(&self, key: &[u8]) -> Option<Vec<u8>> {
-        self.storage.get(key).map(|blob| blob.to_owned())
+        self.storage.get(key)
     }
 
     fn set(&self, key: &[u8], value: &[u8]) {
@@ -44,7 +44,6 @@ impl<S: Storage> MoveStorage<S> {
     pub fn new(storage: S) -> MoveStorage<S> {
         MoveStorage { storage }
     }
-
 }
 
 impl<S: Storage> ModuleResolver for MoveStorage<S> {
