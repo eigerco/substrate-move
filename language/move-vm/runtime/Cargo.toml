@@ -24,8 +24,6 @@ move-core-types = { path = "../../move-core/types", default-features = false }
 move-vm-types = { path = "../types", default-features = false }
 move-binary-format = { path = "../../move-binary-format", default-features = false }
 
-better_any = { git = "https://github.com/aj3n/better_any.git", branch = "main", default-features = false }
-
 [features]
 default = ["std"]
 fuzzing = ["move-vm-types/fuzzing"]
