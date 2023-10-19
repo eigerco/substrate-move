@@ -117,17 +117,17 @@ where
         self.warehouse.apply_changes(changeset)
     }
 
+    /// Execute script using the given arguments (args).
     pub fn execute_script(
         &self,
-        script_bytecode: &[u8],
+        script: &[u8],
         type_args: Vec<TypeTag>,
         args: Vec<&[u8]>,
         gas: &mut impl GasMeter,
     ) -> Result<(), Error> {
         let mut sess = self.vm.new_session(&self.warehouse);
 
-        let res = sess
-            .execute_script(script_bytecode.to_vec(), type_args, args, gas)
+        sess.execute_script(script, type_args, args, gas)
             .map_err(|err| {
                 let (code, _, msg, _, _, _, _) = err.all_data();
                 anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
