@@ -151,6 +151,50 @@ where
     /// Execute script using the given arguments (args).
     pub fn execute_script(
         &self,
+        script: &[u8],
+        type_args: Vec<TypeTag>,
+        args: Vec<&[u8]>,
+        gas: &mut impl GasMeter,
+    ) -> Result<(), Error> {
+        self.execute_script_worker(
+            Transaction {
+                call: Call::Script {
+                    code: script.to_vec(),
+                },
+                type_args,
+                args: args.iter().map(|x| x.to_vec()).collect(),
+            },
+            gas,
+        )
+    }
+
+    /// Execute function from module using the given arguments (args).
+    pub fn execute_function(
+        &self,
+        mod_address: AccountAddress,
+        mod_name: Identifier,
+        func_name: Identifier,
+        type_args: Vec<TypeTag>,
+        args: Vec<&[u8]>,
+        gas: &mut impl GasMeter,
+    ) -> Result<(), Error> {
+        self.execute_script_worker(
+            Transaction {
+                call: Call::ScriptFunction {
+                    mod_address,
+                    mod_name,
+                    func_name,
+                },
+                type_args,
+                args: args.iter().map(|x| x.to_vec()).collect(),
+            },
+            gas,
+        )
+    }
+
+    /// Execute script using the given arguments (args).
+    fn execute_script_worker(
+        &self,
         transaction: Transaction,
         gas: &mut impl GasMeter,
     ) -> Result<(), Error> {
