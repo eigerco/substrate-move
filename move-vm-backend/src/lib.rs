@@ -12,9 +12,10 @@ use anyhow::{anyhow, Error};
 
 use move_binary_format::CompiledModule;
 use move_core_types::account_address::AccountAddress;
+use move_core_types::identifier::Identifier;
 
 use move_core_types::{
-    language_storage::{TypeTag, CORE_CODE_ADDRESS},
+    language_storage::{ModuleId, TypeTag, CORE_CODE_ADDRESS},
     resolver::{ModuleResolver, ResourceResolver},
 };
 use move_vm_runtime::move_vm::MoveVM;
@@ -34,6 +35,36 @@ where
     vm: MoveVM,
     // Storage instance
     warehouse: Warehouse<S>,
+}
+
+/// Call type used to determine if we are calling script or function inside some module.
+#[derive(Debug)]
+pub enum Call {
+    /// Script
+    Script {
+        /// Script bytecode.
+        code: Vec<u8>,
+    },
+    /// Function in module with script viability.
+    ScriptFunction {
+        /// Module address.
+        mod_address: AccountAddress,
+        /// Module name.
+        mod_name: Identifier,
+        /// Function name - must be public and marked as `entry` in the module.
+        func_name: Identifier,
+    },
+}
+
+/// Transaction struct used in execute_script call.
+#[derive(Debug)]
+pub struct Transaction {
+    /// Call type.
+    pub call: Call,
+    /// Type arguments.
+    pub type_args: Vec<TypeTag>,
+    /// Arguments of the call.
+    pub args: Vec<Vec<u8>>,
 }
 
 impl<S> Mvm<S>
@@ -120,18 +151,37 @@ where
     /// Execute script using the given arguments (args).
     pub fn execute_script(
         &self,
-        script: &[u8],
-        type_args: Vec<TypeTag>,
-        args: Vec<&[u8]>,
+        transaction: Transaction,
         gas: &mut impl GasMeter,
     ) -> Result<(), Error> {
         let mut sess = self.vm.new_session(&self.warehouse);
 
-        sess.execute_script(script, type_args, args, gas)
-            .map_err(|err| {
-                let (code, _, msg, _, _, _, _) = err.all_data();
-                anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
-            })?;
+        match transaction.call {
+            Call::Script { code } => {
+                sess.execute_script(code, transaction.type_args, transaction.args, gas)
+                    .map_err(|err| {
+                        let (code, _, msg, _, _, _, _) = err.all_data();
+                        anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
+                    })?;
+            }
+            Call::ScriptFunction {
+                mod_address,
+                mod_name,
+                func_name,
+            } => {
+                sess.execute_entry_function(
+                    &ModuleId::new(mod_address, mod_name),
+                    &func_name,
+                    transaction.type_args,
+                    transaction.args,
+                    gas,
+                )
+                .map_err(|err| {
+                    let (code, _, msg, _, _, _, _) = err.all_data();
+                    anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
+                })?;
+            }
+        }
 
         let (changeset, _) = sess.finish().map_err(|err| {
             let (code, _, msg, _, _, _, _) = err.all_data();

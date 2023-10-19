@@ -1,5 +1,5 @@
 use crate::mock::StorageMock;
-use move_vm_backend::Mvm;
+use move_vm_backend::{Call, Mvm, Transaction};
 
 use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
@@ -171,8 +171,15 @@ fn get_resource() {
     let script = read_script_bytes_from_project("basic_coin", "main");
     let addr_param = bcs::to_bytes(&address).unwrap();
     let type_args: Vec<TypeTag> = vec![];
-    let params: Vec<&[u8]> = vec![&addr_param];
-    let result = vm.execute_script(script.as_slice(), type_args, params, &mut gas_status);
+    let params: Vec<Vec<u8>> = vec![addr_param];
+    let result = vm.execute_script(
+        Transaction {
+            call: Call::Script { code: script },
+            type_args,
+            args: params,
+        },
+        &mut gas_status,
+    );
 
     assert!(result.is_ok(), "script execution failed");
 
@@ -217,9 +224,16 @@ fn execute_script_with_no_params_test() {
     let mut gas_status = GasStatus::new_unmetered();
 
     let type_args: Vec<TypeTag> = vec![];
-    let params: Vec<&[u8]> = vec![];
+    let params: Vec<Vec<u8>> = vec![];
 
-    let result = vm.execute_script(script.as_slice(), type_args, params, &mut gas_status);
+    let result = vm.execute_script(
+        Transaction {
+            call: Call::Script { code: script },
+            type_args,
+            args: params,
+        },
+        &mut gas_status,
+    );
 
     assert!(result.is_ok(), "failed to execute the script");
 }
@@ -236,9 +250,57 @@ fn execute_script_params_test() {
 
     let iter_count = bcs::to_bytes(&10u64).unwrap();
     let type_args: Vec<TypeTag> = vec![];
-    let params: Vec<&[u8]> = vec![iter_count.as_slice()];
+    let params: Vec<Vec<u8>> = vec![iter_count.to_vec()];
 
-    let result = vm.execute_script(script.as_slice(), type_args, params, &mut gas_status);
+    let result = vm.execute_script(
+        Transaction {
+            call: Call::Script { code: script },
+            type_args,
+            args: params,
+        },
+        &mut gas_status,
+    );
 
     assert!(result.is_ok(), "failed to execute the script");
+}
+
+#[test]
+#[ignore = "we need to build the move package before with a script before running the test"]
+fn execute_function_test() {
+    let store = StorageMock::new();
+    let vm = Mvm::new(store).unwrap();
+    let mut gas_status = GasStatus::new_unmetered();
+
+    let addr_std = AccountAddress::from_hex_literal("0x1").unwrap();
+    let module = read_stdlib_module_bytes_from_project("basic_coin", "signer");
+    let result = vm.publish_module(module.as_slice(), addr_std, &mut gas_status);
+
+    assert!(result.is_ok(), "Failed to publish the stdlib module");
+
+    let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
+    let module = read_module_bytes_from_project("basic_coin", "BasicCoin");
+    let result = vm.publish_module(module.as_slice(), address, &mut gas_status);
+
+    assert!(result.is_ok(), "Failed to publish the module");
+
+    let addr_param = bcs::to_bytes(&address).unwrap();
+    let mod_name = Identifier::new("BasicCoin").unwrap();
+    let func_name = Identifier::new("publish_balance").unwrap();
+
+    let type_args: Vec<TypeTag> = vec![];
+    let params: Vec<Vec<u8>> = vec![addr_param];
+    let result = vm.execute_script(
+        Transaction {
+            call: Call::ScriptFunction {
+                mod_address: address,
+                mod_name,
+                func_name,
+            },
+            type_args,
+            args: params,
+        },
+        &mut gas_status,
+    );
+
+    assert!(result.is_ok(), "script execution failed");
 }
