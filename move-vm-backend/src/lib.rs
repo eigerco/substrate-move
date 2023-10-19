@@ -39,7 +39,7 @@ where
 
 /// Call type used to determine if we are calling script or function inside some module.
 #[derive(Debug)]
-pub enum Call {
+enum Call {
     /// Script
     Script {
         /// Script bytecode.
@@ -58,7 +58,7 @@ pub enum Call {
 
 /// Transaction struct used in execute_script call.
 #[derive(Debug)]
-pub struct Transaction {
+struct Transaction {
     /// Call type.
     pub call: Call,
     /// Type arguments.
