@@ -14,7 +14,7 @@ use move_binary_format::CompiledModule;
 use move_core_types::account_address::AccountAddress;
 
 use move_core_types::{
-    language_storage::CORE_CODE_ADDRESS,
+    language_storage::{CORE_CODE_ADDRESS, TypeTag},
     resolver::{ModuleResolver, ResourceResolver},
 };
 use move_vm_runtime::move_vm::MoveVM;
@@ -104,6 +104,29 @@ where
         let mut sess = self.vm.new_session(&self.warehouse);
 
         sess.publish_module(module.to_vec(), address, gas)
+            .map_err(|err| {
+                let (code, _, msg, _, _, _, _) = err.all_data();
+                anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
+            })?;
+
+        let (changeset, _) = sess.finish().map_err(|err| {
+            let (code, _, msg, _, _, _, _) = err.all_data();
+            anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
+        })?;
+
+        self.warehouse.apply_changes(changeset)
+    }
+
+    pub fn execute_script(
+        &self,
+        script_bytecode: &[u8],
+        type_args: Vec<TypeTag>,
+        args: Vec<&[u8]>,
+        gas: &mut impl GasMeter,) -> Result<(), Error>
+    {
+        let mut sess = self.vm.new_session(&self.warehouse);
+
+        let res = sess.execute_script(script_bytecode.to_vec(), type_args, args, gas)
             .map_err(|err| {
                 let (code, _, msg, _, _, _, _) = err.all_data();
                 anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
