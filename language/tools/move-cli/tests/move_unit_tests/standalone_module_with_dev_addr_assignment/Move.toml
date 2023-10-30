@@ -6,7 +6,6 @@ version = "1.0.0"
 A = "_"
 
 [dev-addresses]
-std = "0x1"
 A = "0x2"
 
 [dev-dependencies]

@@ -4,6 +4,3 @@ version = "1.5.0"
 
 [dependencies]
 MoveStdlib = { local = ".." }
-
-[dev-addresses]
-std = "0x1"

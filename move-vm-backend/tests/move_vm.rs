@@ -37,17 +37,6 @@ fn read_bundle_from_project(project: &str, bundle_name: &str) -> Vec<u8> {
     read_bytes(&path)
 }
 
-/// Reads a precompiled Move stdlib module from our assets directory for specified project.
-/// This will be replaced in the future with a proper stdlib genesis initialization.
-fn read_stdlib_module_bytes_from_project(project: &str, stdlib_module_name: &str) -> Vec<u8> {
-    const MOVE_PROJECTS: &str = "tests/assets/move-projects";
-
-    let path =
-        format!("{MOVE_PROJECTS}/{project}/build/{project}/bytecode_modules/dependencies/MoveStdlib/{stdlib_module_name}.mv");
-
-    read_bytes(&path)
-}
-
 /// Reads a precompiled Move scripts from our assets directory.
 fn read_script_bytes_from_project(project: &str, script_name: &str) -> Vec<u8> {
     const MOVE_PROJECTS: &str = "tests/assets/move-projects";
@@ -205,10 +194,10 @@ fn get_resource() {
     let mut gas_status = GasStatus::new_unmetered();
 
     let addr_std = AccountAddress::from_hex_literal("0x1").unwrap();
-    let module = read_stdlib_module_bytes_from_project("basic_coin", "signer");
-    let result = vm.publish_module(&module, addr_std, &mut gas_status);
+    let stdlib = move_stdlib::move_stdlib_bundle();
+    let result = vm.publish_module_package(&stdlib, addr_std, &mut gas_status);
 
-    assert!(result.is_ok(), "Failed to publish the stdlib module");
+    assert!(result.is_ok(), "Failed to publish the stdlib bundle");
 
     let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let module = read_module_bytes_from_project("basic_coin", "BasicCoin");
@@ -351,10 +340,10 @@ fn execute_function_test() {
     let mut gas_status = GasStatus::new_unmetered();
 
     let addr_std = AccountAddress::from_hex_literal("0x1").unwrap();
-    let module = read_stdlib_module_bytes_from_project("basic_coin", "signer");
-    let result = vm.publish_module(&module, addr_std, &mut gas_status);
+    let stdlib = move_stdlib::move_stdlib_bundle();
+    let result = vm.publish_module_package(&stdlib, addr_std, &mut gas_status);
 
-    assert!(result.is_ok(), "Failed to publish the stdlib module");
+    assert!(result.is_ok(), "Failed to publish the stdlib bundle");
 
     let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let module = read_module_bytes_from_project("basic_coin", "BasicCoin");
