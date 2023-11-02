@@ -1,6 +1,6 @@
 //! SS58 address format converter for Substrate and Move accounts.
 
-use anyhow::{anyhow, ensure, Result};
+use anyhow::{anyhow, bail, Result};
 use blake2::{Blake2b512, Digest};
 use move_core_types::account_address::AccountAddress;
 
@@ -17,6 +17,18 @@ const CHECKSUM_LEN: usize = 2;
 // Blake2b512 hash length in bytes
 const HASH_LEN: usize = 64;
 
+// Maximum supported address type length in bytes
+const ADDR_TYPE_MAX_LEN: usize = 2;
+
+// Minimum supported address type length in bytes
+const ADDR_TYPE_MIN_LEN: usize = 1;
+
+// Maximum supported SS58 address length in bytes
+const SS58_MAX_LEN: usize = ADDR_TYPE_MAX_LEN + PUB_KEY_LEN + CHECKSUM_LEN;
+
+// Minimum supported SS58 address length in bytes
+const SS58_MIN_LEN: usize =  ADDR_TYPE_MIN_LEN + PUB_KEY_LEN + CHECKSUM_LEN;
+
 /// Convert ss58 address string to Move address structure
 /// In case if such conversion is not possible, return error.
 /// ```
@@ -29,28 +41,41 @@ const HASH_LEN: usize = 64;
 /// );
 /// ```
 pub fn ss58_to_move_address(ss58: &str) -> Result<AccountAddress> {
+    // Decoded format: <addr_type>|<address>|<checksum>
+    //  Size in bytes:   1 or 2   |   32    |    2
     let decoded_ss58 = bs58::decode(ss58).into_vec()?;
 
-    ensure!(
-        decoded_ss58.len() > PUB_KEY_LEN + CHECKSUM_LEN,
-        format!(
-            "Address length must be equal or greater than {} bytes",
-            PUB_KEY_LEN + CHECKSUM_LEN
-        )
-    );
+    // Check if the length is valid and figure out the address type length.
+    let addr_type_len = match decoded_ss58.len() {
+        SS58_MIN_LEN => ADDR_TYPE_MIN_LEN,
+        SS58_MAX_LEN => ADDR_TYPE_MAX_LEN,
+        len => bail!("unsupported ss58 address length: {len}"),
+    };
 
-    let check_sum = &decoded_ss58[decoded_ss58.len() - CHECKSUM_LEN..];
-    let address = &decoded_ss58
-        [decoded_ss58.len() - PUB_KEY_LEN - CHECKSUM_LEN..decoded_ss58.len() - CHECKSUM_LEN];
+    let (type_and_addr, checksum) = &decoded_ss58.split_at(addr_type_len + PUB_KEY_LEN);
 
-    if check_sum != &ss58_hash(&decoded_ss58[0..decoded_ss58.len() - CHECKSUM_LEN])[0..CHECKSUM_LEN]
-    {
-        return Err(anyhow!("Wrong address checksum"));
+    if *checksum != &ss58_checksum(&type_and_addr) {
+        bail!("invalid address checksum");
     }
 
-    let mut addr = [0; PUB_KEY_LEN];
-    addr.copy_from_slice(address);
-    Ok(AccountAddress::new(addr))
+    let (addr_type, address) = type_and_addr.split_at(addr_type_len);
+
+    // Sanity checks here
+    match addr_type_len {
+        ADDR_TYPE_MIN_LEN => {
+            if addr_type[0] > 63 && addr_type[0] < 128 {
+                bail!("invalid address length, address types from 64 to 127 are two bytes long");
+            }
+        }
+        ADDR_TYPE_MAX_LEN => {
+            if addr_type[0] < 64 {
+                bail!("invalid address length, address types from 0 to 63 are exactly one byte long");
+            }
+        }
+        _ => unreachable!(),
+    }
+
+    AccountAddress::from_bytes(address).map_err(anyhow::Error::msg)
 }
 
 /// Convert SS58 address to Move address string.
@@ -59,11 +84,14 @@ pub fn ss58_to_move_address_string(ss58: &str) -> Result<String> {
 }
 
 // Helper function which calculates the BLAKE2b512 hash of the given data.
-fn ss58_hash(data: &[u8]) -> [u8; HASH_LEN] {
+fn ss58_checksum(data: &[u8]) -> [u8; CHECKSUM_LEN] {
     let mut hasher = Blake2b512::new();
     hasher.update(SS58_PREFIX);
     hasher.update(data);
-    hasher.finalize().into()
+    let hash: [u8; HASH_LEN] = hasher.finalize().into();
+    let checksum = &hash[..CHECKSUM_LEN];
+    // Convert checksum to fixed size array (always possible as hasher always return fixed size array)
+    checksum.try_into().expect("checksum length is invalid")
 }
 
 #[cfg(test)]
@@ -106,10 +134,10 @@ mod tests {
     }
 
     #[test]
-    fn test_ss58hash() {
+    fn test_ss58checksum() {
         let msg = b"hello, world!";
-        let hash = ss58_hash(msg).to_vec();
+        let hash = ss58_checksum(msg).to_vec();
 
-        assert_eq!(hex_literal::hex!("656facfcf4f90cce9ec9b65c9185ea75346507c67e25133f5809b442487468a674973f9167193e86bee0c706f6766f7edf638ed3e21ad12c2908ea62924af4d7").to_vec(), hash);
+        assert_eq!(hex_literal::hex!("656f").to_vec(), hash);
     }
 }
