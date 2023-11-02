@@ -1,5 +1,4 @@
 //! SS58 address format converter for Substrate and Move accounts.
-//! Based on the Pontem solution.
 
 use anyhow::{anyhow, ensure, Result};
 use blake2::{Blake2b512, Digest};
@@ -10,10 +9,10 @@ use move_core_types::account_address::AccountAddress;
 const SS58_PREFIX: &[u8] = b"SS58PRE";
 
 // Public key length in bytes
-const PUB_KEY_LENGTH: usize = 32;
+const PUB_KEY_LEN: usize = 32;
 
 // Checksum length in bytes
-const CHECK_SUM_LEN: usize = 2;
+const CHECKSUM_LEN: usize = 2;
 
 // Blake2b512 hash length in bytes
 const HASH_LEN: usize = 64;
@@ -30,24 +29,24 @@ const HASH_LEN: usize = 64;
 /// );
 /// ```
 pub fn ss58_to_move_address(ss58: &str) -> Result<AccountAddress> {
-    let bs58 = bs58::decode(ss58).into_vec()?;
+    let decoded_ss58 = bs58::decode(ss58).into_vec()?;
 
     ensure!(
-        bs58.len() > PUB_KEY_LENGTH + CHECK_SUM_LEN,
+        decoded_ss58.len() > PUB_KEY_LEN + CHECKSUM_LEN,
         format!(
             "Address length must be equal or greater than {} bytes",
-            PUB_KEY_LENGTH + CHECK_SUM_LEN
+            PUB_KEY_LEN + CHECKSUM_LEN
         )
     );
 
-    let check_sum = &bs58[bs58.len() - CHECK_SUM_LEN..];
-    let address = &bs58[bs58.len() - PUB_KEY_LENGTH - CHECK_SUM_LEN..bs58.len() - CHECK_SUM_LEN];
+    let check_sum = &decoded_ss58[decoded_ss58.len() - CHECKSUM_LEN..];
+    let address = &decoded_ss58[decoded_ss58.len() - PUB_KEY_LEN - CHECKSUM_LEN..decoded_ss58.len() - CHECKSUM_LEN];
 
-    if check_sum != &ss58_hash(&bs58[0..bs58.len() - CHECK_SUM_LEN])[0..CHECK_SUM_LEN] {
+    if check_sum != &ss58_hash(&decoded_ss58[0..decoded_ss58.len() - CHECKSUM_LEN])[0..CHECKSUM_LEN] {
         return Err(anyhow!("Wrong address checksum"));
     }
 
-    let mut addr = [0; PUB_KEY_LENGTH];
+    let mut addr = [0; PUB_KEY_LEN];
     addr.copy_from_slice(address);
     Ok(AccountAddress::new(addr))
 }
@@ -76,7 +75,7 @@ mod tests {
 
         assert_eq!(
             (move_address.len() - 2) / 2,   // 2 hex chars per byte
-            PUB_KEY_LENGTH
+            PUB_KEY_LEN
         );
 
         assert_eq!(
@@ -89,7 +88,7 @@ mod tests {
 
         assert_eq!(
             (move_address.len() - 2) / 2,   // 2 hex chars per byte
-            PUB_KEY_LENGTH
+            PUB_KEY_LEN
         );
 
         assert_eq!(
