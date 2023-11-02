@@ -1,6 +1,6 @@
 //! SS58 address format converter for Substrate and Move accounts.
 
-use anyhow::{anyhow, bail, Result};
+use anyhow::{bail, Result};
 use blake2::{Blake2b512, Digest};
 use move_core_types::account_address::AccountAddress;
 
@@ -54,7 +54,7 @@ pub fn ss58_to_move_address(ss58: &str) -> Result<AccountAddress> {
 
     let (type_and_addr, checksum) = &decoded_ss58.split_at(addr_type_len + PUB_KEY_LEN);
 
-    if *checksum != &ss58_checksum(&type_and_addr) {
+    if *checksum != ss58_checksum(type_and_addr) {
         bail!("invalid address checksum");
     }
 
