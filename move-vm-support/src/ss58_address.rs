@@ -62,19 +62,13 @@ pub fn ss58_to_move_address(ss58: &str) -> Result<AccountAddress> {
 
     // Sanity checks here
     match addr_type_len {
-        ADDR_TYPE_MIN_LEN => {
-            if addr_type[0] > 63 && addr_type[0] < 128 {
-                bail!("invalid address length, address types from 64 to 127 are two bytes long");
-            }
+        ADDR_TYPE_MIN_LEN if (64..=127).contains(&addr_type[0]) => {
+            bail!("invalid address length, address types from 64 to 127 are two bytes long");
         }
-        ADDR_TYPE_MAX_LEN => {
-            if addr_type[0] < 64 {
-                bail!(
-                    "invalid address length, address types from 0 to 63 are exactly one byte long"
-                );
-            }
+        ADDR_TYPE_MAX_LEN if (0..=63).contains(&addr_type[0]) => {
+            bail!("invalid address length, address types from 0 to 63 are exactly one byte long");
         }
-        _ => unreachable!(),
+        _ => (),
     }
 
     AccountAddress::from_bytes(address).map_err(anyhow::Error::msg)
