@@ -27,7 +27,7 @@ const ADDR_TYPE_MIN_LEN: usize = 1;
 const SS58_MAX_LEN: usize = ADDR_TYPE_MAX_LEN + PUB_KEY_LEN + CHECKSUM_LEN;
 
 // Minimum supported SS58 address length in bytes
-const SS58_MIN_LEN: usize =  ADDR_TYPE_MIN_LEN + PUB_KEY_LEN + CHECKSUM_LEN;
+const SS58_MIN_LEN: usize = ADDR_TYPE_MIN_LEN + PUB_KEY_LEN + CHECKSUM_LEN;
 
 /// Convert ss58 address string to Move address structure
 /// In case if such conversion is not possible, return error.
@@ -69,7 +69,9 @@ pub fn ss58_to_move_address(ss58: &str) -> Result<AccountAddress> {
         }
         ADDR_TYPE_MAX_LEN => {
             if addr_type[0] < 64 {
-                bail!("invalid address length, address types from 0 to 63 are exactly one byte long");
+                bail!(
+                    "invalid address length, address types from 0 to 63 are exactly one byte long"
+                );
             }
         }
         _ => unreachable!(),
