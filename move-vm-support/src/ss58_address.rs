@@ -40,9 +40,11 @@ pub fn ss58_to_move_address(ss58: &str) -> Result<AccountAddress> {
     );
 
     let check_sum = &decoded_ss58[decoded_ss58.len() - CHECKSUM_LEN..];
-    let address = &decoded_ss58[decoded_ss58.len() - PUB_KEY_LEN - CHECKSUM_LEN..decoded_ss58.len() - CHECKSUM_LEN];
+    let address = &decoded_ss58
+        [decoded_ss58.len() - PUB_KEY_LEN - CHECKSUM_LEN..decoded_ss58.len() - CHECKSUM_LEN];
 
-    if check_sum != &ss58_hash(&decoded_ss58[0..decoded_ss58.len() - CHECKSUM_LEN])[0..CHECKSUM_LEN] {
+    if check_sum != &ss58_hash(&decoded_ss58[0..decoded_ss58.len() - CHECKSUM_LEN])[0..CHECKSUM_LEN]
+    {
         return Err(anyhow!("Wrong address checksum"));
     }
 
@@ -74,7 +76,7 @@ mod tests {
         let move_address = ss58_to_move_address_string(substrate_address).unwrap();
 
         assert_eq!(
-            (move_address.len() - 2) / 2,   // 2 hex chars per byte
+            (move_address.len() - 2) / 2, // 2 hex chars per byte
             PUB_KEY_LEN
         );
 
@@ -87,7 +89,7 @@ mod tests {
         let move_address = ss58_to_move_address_string(substrate_address).unwrap();
 
         assert_eq!(
-            (move_address.len() - 2) / 2,   // 2 hex chars per byte
+            (move_address.len() - 2) / 2, // 2 hex chars per byte
             PUB_KEY_LEN
         );
 
