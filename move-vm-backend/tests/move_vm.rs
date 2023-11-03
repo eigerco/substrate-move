@@ -3,7 +3,7 @@ use move_vm_backend::Mvm;
 
 use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
-use move_core_types::language_storage::{ModuleId, StructTag};
+use move_core_types::language_storage::StructTag;
 use move_vm_backend_common::types::ModuleBundle;
 
 use move_core_types::language_storage::TypeTag;
