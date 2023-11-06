@@ -33,27 +33,33 @@ pub enum TransferError {
     NoSessionTokenPresent,
 }
 
-/// Callback signature of method to do the transfer between accounts
-/// # Params
-/// * first 'AccountAddress' is of a sender;
-/// * second 'AccountAddress' is of recepient;
-/// * u128 is amount to transfer;
-/// # Returns
-/// * Result of nothing on success and 'TransferError' variant on error;
-pub type TransferCallback =
-    Box<dyn Fn(AccountAddress, AccountAddress, u128) -> Result<(), TransferError>>;
+pub trait SubstrateAPI {
+    /// Callback signature of method to do the transfer between accounts
+    /// # Params
+    /// * from - 'AccountAddress' is of a sender;
+    /// * to - 'AccountAddress' is of recepient;
+    /// * amount - 'u128' is amount to transfer;
+    /// # Returns
+    /// * Result of success or 'TransferError' variant on error;
+    fn transfer(
+        from: AccountAddress,
+        to: AccountAddress,
+        amount: u128,
+    ) -> Result<(), TransferError>;
+}
 
 /// Main MoveVM structure, which is used to represent the virutal machine itself.
-pub struct Mvm<S>
+pub struct Mvm<S, A>
 where
     S: Storage,
+    A: SubstrateAPI,
 {
     // MoveVM instance - from move_vm_runtime crate
     vm: MoveVM,
     // Storage instance
     warehouse: Warehouse<S>,
     // transfer callback
-    transfer: TransferCallback,
+    substrate_api: A,
 }
 
 /// Call type used to determine if we are calling script or function inside some module.
@@ -86,21 +92,22 @@ struct Transaction {
     pub args: Vec<Vec<u8>>,
 }
 
-impl<S> Mvm<S>
+impl<S, A> Mvm<S, A>
 where
     S: Storage,
+    A: SubstrateAPI,
 {
     /// Create a new Move VM with the given storage.
-    pub fn new(storage: S, transfer: TransferCallback) -> Result<Mvm<S>, Error> {
-        Self::new_with_config(storage, transfer)
+    pub fn new(storage: S, substrate_api: A) -> Result<Mvm<S, A>, Error> {
+        Self::new_with_config(storage, substrate_api)
     }
 
     /// Create a new Move VM with the given storage and configuration.
     pub(crate) fn new_with_config(
         storage: S,
-        transfer: TransferCallback,
+        substrate_api: A,
         // config: VMConfig,
-    ) -> Result<Mvm<S>, Error> {
+    ) -> Result<Mvm<S, A>, Error> {
         Ok(Mvm {
             vm: MoveVM::new(all_natives(CORE_CODE_ADDRESS, GasParameters::zeros())).map_err(
                 |err| {
@@ -109,7 +116,7 @@ where
                 },
             )?,
             warehouse: Warehouse::new(storage),
-            transfer,
+            substrate_api,
         })
     }
 
