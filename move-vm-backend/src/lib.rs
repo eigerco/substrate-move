@@ -36,16 +36,21 @@ pub enum TransferError {
 pub trait SubstrateAPI {
     /// Callback signature of method to do the transfer between accounts
     /// # Params
-    /// * from - 'AccountAddress' is of a sender;
-    /// * to - 'AccountAddress' is of recepient;
-    /// * amount - 'u128' is amount to transfer;
+    /// * `from` - 'AccountAddress' is of a sender;
+    /// * `to` - 'AccountAddress' is of recepient;
+    /// * `amount` - 'u128' is amount to transfer;
     /// # Returns
-    /// * Result of success or 'TransferError' variant on error;
+    /// * Result of success or 'TransferError' variant on error.
     fn transfer(
         from: AccountAddress,
         to: AccountAddress,
         amount: u128,
     ) -> Result<(), TransferError>;
+    /// Callback to fetch account's balance in Substrate native currency
+    /// # Params
+    /// `of` - 'AccountAddress' of the account in question;
+    /// # Returns 'u128' value of account's balance.
+    fn get_balance(of: AccountAddress) -> u128;
 }
 
 /// Main MoveVM structure, which is used to represent the virutal machine itself.
