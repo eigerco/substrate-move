@@ -67,6 +67,10 @@ impl SubstrateAPI for Test {
     ) -> Result<(), TransferError> {
         Ok(())
     }
+
+    fn get_balance(_of: AccountAddress) -> u128 {
+        1
+    }
 }
 
 #[test]
