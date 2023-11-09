@@ -1,5 +1,5 @@
 address 0x42 {
-	module deposit {
+	module DepositModule {
 		use std::signer;
 
 		/// Deposit structure to transfer or fetch own balance

@@ -27,7 +27,7 @@ pub(crate) const CORE_CODE_ADDRESS: AccountAddress = AccountAddress::new([
 
 lazy_static! {
     pub(crate) static ref DEPOSIT_TEMPLATE: StructTag = StructTag {
-        address: CORE_CODE_ADDRESS,
+        address: AccountAddress::from_hex_literal("0x42").unwrap(),
         module: ident_str!("DepositModule").to_owned(),
         name: ident_str!("Deposit").to_owned(),
         type_params: vec![TypeTag::U8],
