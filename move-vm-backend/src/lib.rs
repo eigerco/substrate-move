@@ -3,7 +3,7 @@
 extern crate alloc;
 
 mod abi;
-mod deposit;
+pub mod deposit;
 pub mod storage;
 mod warehouse;
 
