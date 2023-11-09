@@ -7,6 +7,8 @@ mod deposit;
 pub mod storage;
 mod warehouse;
 
+use core::fmt::Display;
+
 use abi::ModuleAbi;
 use alloc::vec::Vec;
 use anyhow::{anyhow, Error};
@@ -29,9 +31,16 @@ use crate::storage::Storage;
 use crate::warehouse::Warehouse;
 
 /// Represents failures that might occure during native token transaction
+#[derive(Debug)]
 pub enum TransferError {
     InsuficientBalance,
     NoSessionTokenPresent,
+}
+
+impl Display for TransferError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str(format!("{:?}", self).as_str())
+    }
 }
 
 pub trait SubstrateAPI {
@@ -43,6 +52,7 @@ pub trait SubstrateAPI {
     /// # Returns
     /// * Result of success or 'TransferError' variant on error.
     fn transfer(
+        &self,
         from: AccountAddress,
         to: AccountAddress,
         amount: u128,
@@ -51,21 +61,19 @@ pub trait SubstrateAPI {
     /// # Params
     /// `of` - 'AccountAddress' of the account in question;
     /// # Returns 'u128' value of account's balance.
-    fn get_balance(of: AccountAddress) -> u128;
+    fn get_balance(&self, of: AccountAddress) -> u128;
 }
 
 /// Main MoveVM structure, which is used to represent the virutal machine itself.
-pub struct Mvm<S, A>
+pub struct Mvm<S, Api>
 where
     S: Storage,
-    A: SubstrateAPI,
+    Api: SubstrateAPI,
 {
     // MoveVM instance - from move_vm_runtime crate
     vm: MoveVM,
     // Storage instance
-    warehouse: Warehouse<S>,
-    // transfer callback
-    substrate_api: A,
+    warehouse: Warehouse<S, Api>,
 }
 
 /// Call type used to determine if we are calling script or function inside some module.
@@ -98,22 +106,22 @@ struct Transaction {
     pub args: Vec<Vec<u8>>,
 }
 
-impl<S, A> Mvm<S, A>
+impl<S, Api> Mvm<S, Api>
 where
     S: Storage,
-    A: SubstrateAPI,
+    Api: SubstrateAPI,
 {
     /// Create a new Move VM with the given storage.
-    pub fn new(storage: S, substrate_api: A) -> Result<Mvm<S, A>, Error> {
+    pub fn new(storage: S, substrate_api: Api) -> Result<Mvm<S, Api>, Error> {
         Self::new_with_config(storage, substrate_api)
     }
 
     /// Create a new Move VM with the given storage and configuration.
     pub(crate) fn new_with_config(
         storage: S,
-        substrate_api: A,
+        substrate_api: Api,
         // config: VMConfig,
-    ) -> Result<Mvm<S, A>, Error> {
+    ) -> Result<Mvm<S, Api>, Error> {
         Ok(Mvm {
             vm: MoveVM::new(all_natives(CORE_CODE_ADDRESS, GasParameters::zeros())).map_err(
                 |err| {
@@ -121,8 +129,7 @@ where
                     anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
                 },
             )?,
-            warehouse: Warehouse::new(storage),
-            substrate_api,
+            warehouse: Warehouse::new(storage, substrate_api),
         })
     }
 

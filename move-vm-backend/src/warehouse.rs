@@ -1,6 +1,7 @@
 use crate::{
     deposit::{Deposit, DEPOSIT_TEMPLATE},
     storage::Storage,
+    SubstrateAPI,
 };
 use alloc::collections::{
     btree_map::Entry::{Occupied, Vacant},
@@ -65,20 +66,24 @@ impl AccountData {
 }
 
 /// Move VM storage implementation for Substrate storage.
-pub(crate) struct Warehouse<S: Storage> {
+pub(crate) struct Warehouse<S: Storage, Api: SubstrateAPI> {
     /// Substrate storage implementing the Storage trait
     storage: S,
+    substrate_api: Api,
 }
 
-impl<S: Storage> Warehouse<S> {
-    pub(crate) fn new(storage: S) -> Warehouse<S> {
-        Self { storage }
+impl<S: Storage, Api: SubstrateAPI> Warehouse<S, Api> {
+    pub(crate) fn new(storage: S, substrate_api: Api) -> Warehouse<S, Api> {
+        Self {
+            storage,
+            substrate_api,
+        }
     }
 
     pub(crate) fn apply_changes(&self, changeset: ChangeSet) -> Result<()> {
         for (account, changeset) in changeset.into_inner() {
             let key = account.as_slice();
-            let mut account = match self.storage.get(key) {
+            let mut store_account = match self.storage.get(key) {
                 Some(value) => bcs::from_bytes(&value).map_err(Error::msg)?,
                 _ => AccountData::default(),
             };
@@ -94,16 +99,20 @@ impl<S: Storage> Warehouse<S> {
                 match res {
                     Op::New(data) | Op::Modify(data) => {
                         if let Ok(deposit) = bcs::from_bytes::<Deposit>(data) {
-                            // TODO: make actual transaction using SubstrateApi
+                            let (destination, amount) = deposit.into();
+                            // make actual transaction using SubstrateApi
+                            self.substrate_api
+                                .transfer(account, destination, amount)
+                                .map_err(|e| anyhow::Error::msg(e.to_string()))?;
                         }
                     }
                     _ => {} // we ignore Delete
                 }
             }
-            AccountData::apply_changes(&mut account.modules, modules)?;
-            AccountData::apply_changes(&mut account.resources, resources)?;
+            AccountData::apply_changes(&mut store_account.modules, modules)?;
+            AccountData::apply_changes(&mut store_account.resources, resources)?;
 
-            let account_bytes = bcs::to_bytes(&account).map_err(Error::msg)?;
+            let account_bytes = bcs::to_bytes(&store_account).map_err(Error::msg)?;
             self.storage.set(key, &account_bytes);
         }
 
@@ -111,7 +120,7 @@ impl<S: Storage> Warehouse<S> {
     }
 }
 
-impl<S: Storage> Deref for Warehouse<S> {
+impl<S: Storage, Api: SubstrateAPI> Deref for Warehouse<S, Api> {
     type Target = S;
 
     fn deref(&self) -> &Self::Target {
@@ -119,7 +128,7 @@ impl<S: Storage> Deref for Warehouse<S> {
     }
 }
 
-impl<S: Storage> ModuleResolver for Warehouse<S> {
+impl<S: Storage, Api: SubstrateAPI> ModuleResolver for Warehouse<S, Api> {
     type Error = Error;
 
     fn get_module(&self, module_id: &ModuleId) -> Result<Option<Vec<u8>>, Self::Error> {
@@ -137,7 +146,7 @@ impl<S: Storage> ModuleResolver for Warehouse<S> {
     }
 }
 
-impl<S: Storage> ResourceResolver for Warehouse<S> {
+impl<S: Storage, Api: SubstrateAPI> ResourceResolver for Warehouse<S, Api> {
     type Error = Error;
 
     fn get_resource(
