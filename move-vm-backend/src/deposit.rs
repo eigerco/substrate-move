@@ -20,16 +20,16 @@ impl Into<(AccountAddress, u128)> for Deposit {
     }
 }
 
-pub(crate) const CORE_CODE_ADDRESS: AccountAddress = AccountAddress::new([
-    0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8,
-    0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 0u8, 1u8,
-]);
-
 lazy_static! {
     pub(crate) static ref DEPOSIT_TEMPLATE: StructTag = StructTag {
-        address: AccountAddress::from_hex_literal("0x42").unwrap(),
+        address: DEPOSIT_CODE_ADDRESS.clone(),
         module: ident_str!("DepositModule").to_owned(),
         name: ident_str!("Deposit").to_owned(),
         type_params: vec![TypeTag::U8],
     };
+    /// Publisher address of DepositModule
+    pub static ref DEPOSIT_CODE_ADDRESS: AccountAddress = AccountAddress::from_hex_literal("0x42").unwrap();
+    /// Actual bytes of DepositModule module for use with pallet/Mvm
+    pub static ref MOVE_DEPOSIT_MODULE_BYTES: [u8; 331] =
+        include_bytes!("../../deposit/build/deposit/bytecode_modules/DepositModule.mv").to_owned();
 }
