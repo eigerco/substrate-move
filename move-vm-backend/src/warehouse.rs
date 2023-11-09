@@ -1,4 +1,7 @@
-use crate::storage::Storage;
+use crate::{
+    deposit::{Deposit, DEPOSIT_TEMPLATE},
+    storage::Storage,
+};
 use alloc::collections::{
     btree_map::Entry::{Occupied, Vacant},
     BTreeMap,
@@ -81,6 +84,22 @@ impl<S: Storage> Warehouse<S> {
             };
 
             let (modules, resources) = changeset.into_inner();
+            // process Deposit
+            for res in resources
+                .iter()
+                .filter(|r| r.0.eq(&DEPOSIT_TEMPLATE))
+                .map(|v| v.1)
+                .collect::<Vec<&Op<Vec<u8>>>>()
+            {
+                match res {
+                    Op::New(data) | Op::Modify(data) => {
+                        if let Ok(deposit) = bcs::from_bytes::<Deposit>(data) {
+                            // TODO: make actual transaction using SubstrateApi
+                        }
+                    }
+                    _ => {} // we ignore Delete
+                }
+            }
             AccountData::apply_changes(&mut account.modules, modules)?;
             AccountData::apply_changes(&mut account.resources, resources)?;
 
