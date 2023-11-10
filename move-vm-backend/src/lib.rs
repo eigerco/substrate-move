@@ -10,7 +10,7 @@ mod warehouse;
 use core::fmt::Display;
 
 use abi::ModuleAbi;
-use alloc::vec::Vec;
+use alloc::{format, vec::Vec};
 use anyhow::{anyhow, Error};
 
 use move_binary_format::CompiledModule;

@@ -3,11 +3,14 @@ use crate::{
     storage::Storage,
     SubstrateAPI,
 };
-use alloc::collections::{
-    btree_map::Entry::{Occupied, Vacant},
-    BTreeMap,
-};
 use alloc::vec::Vec;
+use alloc::{
+    collections::{
+        btree_map::Entry::{Occupied, Vacant},
+        BTreeMap,
+    },
+    string::String,
+};
 use anyhow::{bail, Error, Result};
 use core::ops::Deref;
 use move_core_types::account_address::AccountAddress;
