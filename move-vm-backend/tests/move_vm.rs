@@ -61,6 +61,7 @@ struct Test {}
 
 impl SubstrateAPI for Test {
     fn transfer(
+        &self,
         _from: AccountAddress,
         _to: AccountAddress,
         _amount: u128,
@@ -68,7 +69,7 @@ impl SubstrateAPI for Test {
         Ok(())
     }
 
-    fn get_balance(_of: AccountAddress) -> u128 {
+    fn get_balance(&self, _of: AccountAddress) -> u128 {
         1
     }
 }
