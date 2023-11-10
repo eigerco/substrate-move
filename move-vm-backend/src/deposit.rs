@@ -1,5 +1,5 @@
 #[cfg(not(feature = "std"))]
-use alloc::{borrow::ToOwned, string::ToString, vec};
+use alloc::{borrow::ToOwned, string::ToString, vec, vec::Vec};
 use lazy_static::lazy_static;
 use move_core_types::{
     account_address::AccountAddress,
@@ -32,6 +32,6 @@ lazy_static! {
     /// Publisher address of DepositModule
     pub static ref DEPOSIT_CODE_ADDRESS: AccountAddress = AccountAddress::from_hex_literal("0x42").unwrap();
     /// Actual bytes of DepositModule module for use with pallet/Mvm
-    pub static ref MOVE_DEPOSIT_MODULE_BYTES: [u8; 299] =
-        include_bytes!("../../DepositModule.mv").to_owned();
+    pub static ref MOVE_DEPOSIT_MODULE_BYTES: Vec<u8> =
+        include_bytes!("../../DepositModule.mv").to_vec();
 }
