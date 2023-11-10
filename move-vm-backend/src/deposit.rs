@@ -33,5 +33,5 @@ lazy_static! {
     pub static ref DEPOSIT_CODE_ADDRESS: AccountAddress = AccountAddress::from_hex_literal("0x42").unwrap();
     /// Actual bytes of DepositModule module for use with pallet/Mvm
     pub static ref MOVE_DEPOSIT_MODULE_BYTES: Vec<u8> =
-        include_bytes!("../../DepositModule.mv").to_vec();
+        include_bytes!("../../contracts/DepositModule.mv").to_vec();
 }

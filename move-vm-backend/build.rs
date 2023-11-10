@@ -12,7 +12,7 @@ fn main() {
     Command::new("cp")
         .args([
             "../deposit/build/deposit/bytecode_modules/DepositModule.mv",
-            "..",
+            "../contracts",
         ])
         .output()
         .expect("failed to copy new DepositModule.mv");
