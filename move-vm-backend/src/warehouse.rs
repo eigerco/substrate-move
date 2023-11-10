@@ -9,7 +9,7 @@ use alloc::{
         btree_map::Entry::{Occupied, Vacant},
         BTreeMap,
     },
-    string::String,
+    string::ToString,
 };
 use anyhow::{bail, Error, Result};
 use core::ops::Deref;
