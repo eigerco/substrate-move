@@ -3,7 +3,7 @@ address 0x42 {
 		use std::signer;
 
 		/// Deposit structure to transfer or fetch own balance
-		/// Bridge between Move and Substrate-Move
+		/// Bridge between Move and Substrate
 		struct Deposit has key {
 			destination: address,
 			amount: u128
