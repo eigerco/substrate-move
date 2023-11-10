@@ -31,7 +31,7 @@ jobs:
 
       # move-vm-runtime
       - name: Install move-cli
-        run: cargo install --git https://github.com/diem/move move-cli --branch main
+        run: cargo install --path ./language/tools/move-cli/ move-cli
 
       - name: Run move-vm-backend tests
         run: cargo test -p move-vm-backend
