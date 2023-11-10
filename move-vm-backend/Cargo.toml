@@ -17,7 +17,7 @@ move-vm-runtime = { path = "../language/move-vm/runtime", default-features = fal
 move-vm-types = { path = "../language/move-vm/types", default-features = false }
 move-stdlib = { path = "../language/move-stdlib", default-features = false, features = ["address32"] }
 move-vm-backend-common = { path = "../move-vm-backend-common", default-features = false }
-lazy_static = "1.4"
+lazy_static = { version = "1.4", default-features = false, features = ["spin_no_std"] }
 
 [dev-dependencies]
 move-vm-test-utils = { path = "../language/move-vm/test-utils" }
