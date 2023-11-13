@@ -25,11 +25,12 @@ pub mod native_functions;
 mod runtime;
 pub mod session;
 #[macro_use]
+#[cfg(feature = "debugging")]
 mod tracing;
 pub mod config;
 
 // Only include debugging functionality in debug builds
-#[cfg(any(debug_assertions, feature = "debugging"))]
+#[cfg(feature = "debugging")]
 mod debug;
 
 #[cfg(test)]
