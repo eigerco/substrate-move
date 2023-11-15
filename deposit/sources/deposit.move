@@ -1,4 +1,4 @@
-address 0x42 {
+address 0x01 {
 	module DepositModule {
 		use std::signer;
 
