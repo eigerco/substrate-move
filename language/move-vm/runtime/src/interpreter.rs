@@ -2,10 +2,12 @@
 // Copyright (c) The Move Contributors
 // SPDX-License-Identifier: Apache-2.0
 
+#[cfg(feature = "debugging")]
+use crate::trace;
+
 use crate::{
     loader::{Function, Loader, Resolver},
     native_functions::NativeContext,
-    trace,
 };
 use move_binary_format::{
     errors::*,
@@ -1760,6 +1762,7 @@ impl Frame {
         let code = self.function.code();
         loop {
             for instruction in &code[self.pc as usize..] {
+                #[cfg(feature = "debugging")]
                 trace!(
                     &self.function,
                     &self.locals,
