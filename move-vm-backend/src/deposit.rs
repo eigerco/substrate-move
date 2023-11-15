@@ -1,5 +1,5 @@
 #[cfg(not(feature = "std"))]
-use alloc::{borrow::ToOwned, string::ToString, vec, vec::Vec};
+use alloc::{borrow::ToOwned, vec, vec::Vec};
 use lazy_static::lazy_static;
 use move_core_types::{
     account_address::AccountAddress,
