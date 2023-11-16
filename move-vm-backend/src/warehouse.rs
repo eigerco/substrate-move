@@ -92,28 +92,33 @@ impl<S: Storage, Api: SubstrateAPI> Warehouse<S, Api> {
             };
 
             let (modules, resources) = changeset.into_inner();
+            let mut unprocessed_resources = vec![];
+            AccountData::apply_changes(&mut store_account.modules, modules)?;
             // process Deposit
-            for res in resources
-                .iter()
+            for (tag, res) in resources
+                .into_iter()
                 .filter(|r| r.0.eq(&DEPOSIT_TEMPLATE))
-                .map(|v| v.1)
-                .collect::<Vec<&Op<Vec<u8>>>>()
+                .map(|v| v)
+                .collect::<Vec<(StructTag, Op<Vec<u8>>)>>()
             {
                 match res {
-                    Op::New(data) | Op::Modify(data) => {
+                    Op::New(ref data) | Op::Modify(ref data) => {
                         if let Ok(deposit) = bcs::from_bytes::<Deposit>(data) {
                             let (destination, amount) = deposit.into();
                             // make actual transaction using SubstrateApi
                             self.substrate_api
                                 .transfer(account, destination, amount)
                                 .map_err(|e| anyhow::Error::msg(e.to_string()))?;
+                        } else {
+                            unprocessed_resources.push((tag, res));
                         }
                     }
-                    _ => {} // we ignore Delete
+                    _ => {
+                        unprocessed_resources.push((tag, res));
+                    } // we ignore Delete
                 }
             }
-            AccountData::apply_changes(&mut store_account.modules, modules)?;
-            AccountData::apply_changes(&mut store_account.resources, resources)?;
+            AccountData::apply_changes(&mut store_account.resources, unprocessed_resources)?;
 
             let account_bytes = bcs::to_bytes(&store_account).map_err(Error::msg)?;
             self.storage.set(key, &account_bytes);
