@@ -33,7 +33,9 @@ lazy_static! {
     pub static ref ROOT_ADDRESS: AccountAddress = AccountAddress::from_hex_literal("0x01").unwrap();
     /// Actual bytes of DepositModule module for use with pallet/Mvm
     pub static ref MOVE_DEPOSIT_MODULE_BYTES: Vec<u8> =
-        include_bytes!("../../contracts/DepositModule.mv").to_vec();
+        include_bytes!("../../contracts/deposit.mv").to_vec();
     /// signer `std` module bytes
     pub static ref SIGNER_MODULE_BYTES: Vec<u8> = include_bytes!("../../contracts/signer.mv").to_vec();
+    /// deposit transfer script for executing deposit
+    pub static ref DEPOSIT_SCRIPT_BYTES: Vec<u8> = include_bytes!("../../contracts/transfer.mv").to_vec();
 }
