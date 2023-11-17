@@ -408,13 +408,27 @@ fn borrow_vector_element(
 
     // check index
     if operand_idx != ST::U64 {
-        return Err(verifier.error(StatusCode::TYPE_MISMATCH, offset));
+        return Err(verifier
+            .error(StatusCode::TYPE_MISMATCH, offset)
+            .with_message("index must be of ST::U64 type".to_string()));
     }
 
     // check vector and update stack
     let element_type = match get_vector_element_type(operand_vec, mut_ref_only) {
         Some(ty) if &ty == declared_element_type => ty,
-        _ => return Err(verifier.error(StatusCode::TYPE_MISMATCH, offset)),
+        Some(ty) => {
+            return Err(verifier
+                .error(StatusCode::TYPE_MISMATCH, offset)
+                .with_message(format!(
+                    "Declared element type {:?} does not match expected {:?}",
+                    declared_element_type, ty
+                )))
+        }
+        None => {
+            return Err(verifier
+                .error(StatusCode::TYPE_MISMATCH, offset)
+                .with_message("No element type retreived for given vector.".to_string()))
+        }
     };
     let element_ref_type = if mut_ref_only {
         ST::MutableReference(Box::new(element_type))
@@ -814,7 +828,12 @@ fn verify_instr(
             for _ in 0..*num {
                 let operand_type = safe_unwrap!(verifier.stack.pop());
                 if element_type != &operand_type {
-                    return Err(verifier.error(StatusCode::TYPE_MISMATCH, offset));
+                    return Err(verifier
+                        .error(StatusCode::TYPE_MISMATCH, offset)
+                        .with_message(format!(
+                            "Element type {:?} not matching operand type {:?} or derivation failed",
+                            operand_type, element_type
+                        )));
                 }
             }
             verifier
@@ -829,7 +848,14 @@ fn verify_instr(
                 Some(derived_element_type) if &derived_element_type == declared_element_type => {
                     verifier.push(meter, ST::U64)?;
                 }
-                _ => return Err(verifier.error(StatusCode::TYPE_MISMATCH, offset)),
+                _ => {
+                    return Err(verifier
+                        .error(StatusCode::TYPE_MISMATCH, offset)
+                        .with_message(format!(
+                            "Derived element type not matching declared {:?} or derivation failed",
+                            declared_element_type
+                        )))
+                }
             };
         }
 
@@ -847,11 +873,23 @@ fn verify_instr(
             let operand_vec = safe_unwrap!(verifier.stack.pop());
             let declared_element_type = &verifier.resolver.signature_at(*idx).0[0];
             if declared_element_type != &operand_elem {
-                return Err(verifier.error(StatusCode::TYPE_MISMATCH, offset));
+                return Err(verifier
+                    .error(StatusCode::TYPE_MISMATCH, offset)
+                    .with_message(format!(
+                        "Derived element type {:?} not matching operand {:?} or derivation failed",
+                        declared_element_type, operand_elem
+                    )));
             }
             match get_vector_element_type(operand_vec, true) {
                 Some(derived_element_type) if &derived_element_type == declared_element_type => {}
-                _ => return Err(verifier.error(StatusCode::TYPE_MISMATCH, offset)),
+                _ => {
+                    return Err(verifier
+                        .error(StatusCode::TYPE_MISMATCH, offset)
+                        .with_message(format!(
+                            "Derived element type not matching declared {:?} or derivation failed",
+                            declared_element_type
+                        )))
+                }
             };
         }
 
@@ -862,7 +900,14 @@ fn verify_instr(
                 Some(derived_element_type) if &derived_element_type == declared_element_type => {
                     verifier.push(meter, derived_element_type)?;
                 }
-                _ => return Err(verifier.error(StatusCode::TYPE_MISMATCH, offset)),
+                _ => {
+                    return Err(verifier
+                        .error(StatusCode::TYPE_MISMATCH, offset)
+                        .with_message(format!(
+                            "Derived element type not matching declared {:?} or derivation failed",
+                            declared_element_type
+                        )))
+                }
             };
         }
 
@@ -870,7 +915,12 @@ fn verify_instr(
             let operand_vec = safe_unwrap!(verifier.stack.pop());
             let declared_element_type = &verifier.resolver.signature_at(*idx).0[0];
             if operand_vec != ST::Vector(Box::new(declared_element_type.clone())) {
-                return Err(verifier.error(StatusCode::TYPE_MISMATCH, offset));
+                return Err(verifier
+                    .error(StatusCode::TYPE_MISMATCH, offset)
+                    .with_message(format!(
+                        "Operand vector is not of declared element type {:?}",
+                        declared_element_type
+                    )));
             }
             for _ in 0..*num {
                 verifier.push(meter, declared_element_type.clone())?;
@@ -882,12 +932,18 @@ fn verify_instr(
             let operand_idx1 = safe_unwrap!(verifier.stack.pop());
             let operand_vec = safe_unwrap!(verifier.stack.pop());
             if operand_idx1 != ST::U64 || operand_idx2 != ST::U64 {
-                return Err(verifier.error(StatusCode::TYPE_MISMATCH, offset));
+                return Err(verifier
+                    .error(StatusCode::TYPE_MISMATCH, offset)
+                    .with_message("Operand id[s] expected to be of ST::U64 type".to_string()));
             }
             let declared_element_type = &verifier.resolver.signature_at(*idx).0[0];
             match get_vector_element_type(operand_vec, true) {
                 Some(derived_element_type) if &derived_element_type == declared_element_type => {}
-                _ => return Err(verifier.error(StatusCode::TYPE_MISMATCH, offset)),
+                _ => {
+                    return Err(verifier
+                        .error(StatusCode::TYPE_MISMATCH, offset)
+                        .with_message("Vector element type retreival failed".to_string()))
+                }
             };
         }
         Bytecode::CastU16 => {
