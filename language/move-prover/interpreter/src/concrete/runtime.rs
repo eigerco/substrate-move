@@ -144,7 +144,8 @@ fn check_and_convert_type_args_and_args(
                         converted_args.push(TypedValue::mk_signer(*v));
                     }
                     _ => {
-                        return Err(PartialVMError::new(StatusCode::TYPE_MISMATCH));
+                        return Err(PartialVMError::new(StatusCode::TYPE_MISMATCH)
+                            .with_message("expected adderss, got signer".to_string()));
                     }
                 }
             }

@@ -445,7 +445,9 @@ fn convert_bcs_arguments_to_move_value_arguments(
     for (arg_bcs, param) in bcs_args.iter().zip(&params[num_signer_args..]) {
         match param.1.clone().into_type_tag(env) {
             None => {
-                return Err(PartialVMError::new(StatusCode::TYPE_MISMATCH));
+                let error = PartialVMError::new(StatusCode::TYPE_MISMATCH)
+                    .with_message(format!("expected parameter type: {:?}", param));
+                return Err(error);
             }
             Some(type_tag) => {
                 let ty = convert_move_type_tag(env, &type_tag)?;

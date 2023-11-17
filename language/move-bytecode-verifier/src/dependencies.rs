@@ -428,7 +428,8 @@ fn compare_cross_module_signatures(
     def_module: &CompiledModule,
 ) -> PartialVMResult<()> {
     if handle_sig.len() != def_sig.len() {
-        return Err(PartialVMError::new(StatusCode::TYPE_MISMATCH));
+        return Err(PartialVMError::new(StatusCode::TYPE_MISMATCH)
+            .with_message("wrong signature size".to_string()));
     }
     for (handle_type, def_type) in handle_sig.iter().zip(def_sig) {
         compare_types(context, handle_type, def_type, def_module)?;
