@@ -16,10 +16,11 @@ address 0x1 {
 
 		/// Transfer 'amount' from given `Deposit` to given 'destination'
 		/// Checks own balance prior to submitting the transaction
-		public fun do_deposit(account: &signer, destination: address, amount: u128) {
+		public fun do_deposit(account: signer, destination: address, amount: u128) {
 			//let current_balance = check_balance(account);
 			//assert!(current_balance >= deposit.amount, 1);
-			move_to(account, deposit)
+			let deposit = new(destination, amount);
+			move_to(&account, deposit)
 		}
 
 		/// Check current balance of self by getting a deposit with own address
