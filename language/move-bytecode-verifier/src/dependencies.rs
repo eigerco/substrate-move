@@ -502,7 +502,10 @@ fn compare_types(
         | (SignatureToken::U16, _)
         | (SignatureToken::U32, _)
         | (SignatureToken::U256, _) => Err(PartialVMError::new(StatusCode::TYPE_MISMATCH)
-            .with_message("Incomparable signature types".to_string())),
+            .with_message(format!(
+                "Incomparable signature types. Handle {:?}; Defined {:?}",
+                handle_type, def_type
+            ))),
     }
 }
 
