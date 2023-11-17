@@ -100,7 +100,11 @@ impl fmt::Display for NumericalAddress {
                 write!(f, "{}", n)
             }
             NumberFormat::Hex => write!(f, "{:#X}", self),
-            NumberFormat::Ss58 => write!(f, "{}", move_vm_support::ss58_address::move_address_to_ss58_string(&self.bytes)),
+            NumberFormat::Ss58 => write!(
+                f,
+                "{}",
+                move_vm_support::ss58_address::move_address_to_ss58_string(&self.bytes)
+            ),
         }
     }
 }

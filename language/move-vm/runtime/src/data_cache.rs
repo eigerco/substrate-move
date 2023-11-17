@@ -296,7 +296,8 @@ impl<'r, 'l, S: MoveResolver> DataStore for TransactionDataCache<'r, 'l, S> {
         val: Value,
     ) -> PartialVMResult<()> {
         let ty_layout = self.loader.type_to_type_layout(&ty)?;
-        Ok(self.event_data.push((guid, seq_num, ty, ty_layout, val)))
+        self.event_data.push((guid, seq_num, ty, ty_layout, val));
+        Ok(())
     }
 
     fn events(&self) -> &Vec<(Vec<u8>, u64, Type, MoveTypeLayout, Value)> {
