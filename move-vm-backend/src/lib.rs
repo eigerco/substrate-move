@@ -5,7 +5,7 @@ extern crate alloc;
 mod abi;
 pub mod deposit;
 pub mod storage;
-pub mod warehouse;
+mod warehouse;
 
 use core::fmt::Display;
 

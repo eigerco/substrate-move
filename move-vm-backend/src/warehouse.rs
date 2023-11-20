@@ -70,21 +70,21 @@ impl AccountData {
 }
 
 /// Move VM storage implementation for Substrate storage.
-pub struct Warehouse<S: Storage, Api: SubstrateAPI> {
+pub(crate) struct Warehouse<S: Storage, Api: SubstrateAPI> {
     /// Substrate storage implementing the Storage trait
     storage: S,
     substrate_api: Api,
 }
 
 impl<S: Storage, Api: SubstrateAPI> Warehouse<S, Api> {
-    pub fn new(storage: S, substrate_api: Api) -> Warehouse<S, Api> {
+    pub(crate) fn new(storage: S, substrate_api: Api) -> Warehouse<S, Api> {
         Self {
             storage,
             substrate_api,
         }
     }
 
-    pub fn apply_changes(&self, changeset: ChangeSet) -> Result<()> {
+    pub(crate) fn apply_changes(&self, changeset: ChangeSet) -> Result<()> {
         for (account, changeset) in changeset.into_inner() {
             let key = account.as_slice();
             let mut store_account = match self.storage.get(key) {
