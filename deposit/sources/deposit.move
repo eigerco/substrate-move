@@ -19,8 +19,7 @@ address 0x1 {
 		public fun do_deposit(account: signer, destination: address, amount: u128) {
 			//let current_balance = check_balance(account);
 			//assert!(current_balance >= deposit.amount, 1);
-			let deposit = new(destination, amount);
-			move_to(&account, deposit)
+			move_to(&account, Deposit { destination, amount } );
 		}
 
 		/// Check current balance of self by getting a deposit with own address
