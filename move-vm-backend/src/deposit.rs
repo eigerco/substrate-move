@@ -25,9 +25,9 @@ impl Into<(AccountAddress, u128)> for Deposit {
 lazy_static! {
     pub(crate) static ref DEPOSIT_TEMPLATE: StructTag = StructTag {
         address: ROOT_ADDRESS.clone(),
-        module: ident_str!("DepositModule").to_owned(),
+        module: ident_str!("deposit").to_owned(),
         name: ident_str!("Deposit").to_owned(),
-        type_params: vec![TypeTag::U8],
+        type_params: vec![TypeTag::Address, TypeTag::U128],
     };
     /// Publisher address of DepositModule and other `std`
     pub static ref ROOT_ADDRESS: AccountAddress = AccountAddress::from_hex_literal("0x01").unwrap();
