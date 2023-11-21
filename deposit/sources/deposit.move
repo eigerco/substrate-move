@@ -16,9 +16,9 @@ address 0x1 {
 
 		/// Transfer 'amount' from given `Deposit` to given 'destination'
 		/// Checks own balance prior to submitting the transaction
-		public fun do_deposit(account: signer, destination: address, amount: u128) {
-			//let current_balance = check_balance(account);
-			//assert!(current_balance >= deposit.amount, 1);
+		public fun do_deposit(account: signer, destination: address, amount: u128) acquires Deposit {
+			// have to delete so it's not in cache / fresh
+			let Deposit { destination: _, amount: _ } = move_from<Deposit>( signer::address_of(&account));
 			move_to(&account, Deposit { destination, amount } );
 		}
 
@@ -31,8 +31,7 @@ address 0x1 {
 		}
 
 		/// Check current balance of `Deposit::destination` by getting a deposit with their address
-		public fun check_balance_of(of: Deposit): u128 acquires Deposit {
-			let Deposit { destination: of, amount: _ } = of;
+		public fun check_balance_of(of: address): u128 acquires Deposit {
 			let Deposit { destination: _ , amount: balance } = borrow_global<Deposit>(of);
 			*balance
 		}

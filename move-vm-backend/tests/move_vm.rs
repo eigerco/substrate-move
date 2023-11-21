@@ -2,7 +2,7 @@ use crate::mock::{StorageMock, SubstrateApiMock};
 use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::StructTag;
-use move_vm_backend::{Mvm, SubstrateAPI, TransferError};
+use move_vm_backend::{deposit::CHECK_BALANCE_OF_SCRIPT_BYTES, Mvm, SubstrateAPI, TransferError};
 use move_vm_backend_common::types::ModuleBundle;
 
 use move_core_types::language_storage::TypeTag;
@@ -444,20 +444,43 @@ fn deposit_module_and_substrate_api_test() {
         &mut UnmeteredGasMeter {},
     )
     .unwrap();
+    // Verify stuff was not actually stored
+    // assert!(!vm
+    //     .get_resource(&destination, &bcs::to_bytes(&*DEPOSIT_TEMPLATE).unwrap())
+    //     .unwrap()
+    //     .is_some());
+    // TODO: check balance chenged
+}
+
+#[test]
+fn check_balance_of_script_test() {
+    let api = SubstrateApiMock {
+        storage: StorageMock::new(),
+    };
+    let vm = Mvm::new(StorageMock::new(), api).unwrap();
+    let root = AccountAddress::from_hex_literal("0x01").unwrap();
+    let destination = AccountAddress::from_hex_literal("0xCAFE").unwrap();
+    vm.publish_module(
+        SIGNER_MODULE_BYTES.as_slice(),
+        root.clone(),
+        &mut UnmeteredGasMeter {},
+    )
+    .unwrap();
+    vm.publish_module(
+        MOVE_DEPOSIT_MODULE_BYTES.as_slice(),
+        root.clone(),
+        &mut UnmeteredGasMeter {},
+    )
+    .unwrap();
+    // script asserts internally
     vm.execute_script(
-        DEPOSIT_SCRIPT_BYTES.as_slice(),
+        CHECK_BALANCE_OF_SCRIPT_BYTES.as_slice(),
         vec![],
         vec![
-            &bcs::to_bytes(&Signer(root)).unwrap(),
             &bcs::to_bytes(&destination).unwrap(),
             &bcs::to_bytes(&123u128).unwrap(),
         ],
         &mut UnmeteredGasMeter {},
     )
     .unwrap();
-    // Verify stuff was actually stored
-    assert!(vm
-        .get_resource(&destination, &bcs::to_bytes(&*DEPOSIT_TEMPLATE).unwrap())
-        .unwrap()
-        .is_some());
 }

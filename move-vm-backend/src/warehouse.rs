@@ -22,7 +22,11 @@ use move_core_types::effects::{
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::{ModuleId, StructTag};
 use move_core_types::resolver::{ModuleResolver, ResourceResolver};
+use move_core_types::value::MoveTypeLayout::U128;
+use move_core_types::value::{MoveFieldLayout, MoveStructLayout, MoveTypeLayout};
+use move_vm_types::values::{Struct, Value};
 use serde::{Deserialize, Serialize};
+use MoveTypeLayout::Address;
 
 /// Structure holding account data which is held under one Move address
 /// in Substrate storage).
@@ -163,6 +167,16 @@ impl<S: Storage, Api: SubstrateAPI> ResourceResolver for Warehouse<S, Api> {
         address: &AccountAddress,
         tag: &StructTag,
     ) -> Result<Option<Vec<u8>>, Self::Error> {
+        if tag == &*DEPOSIT_TEMPLATE {
+            let serialized = Value::struct_(Struct::pack([
+                Value::address(address.to_owned()),
+                Value::u128(self.substrate_api.get_balance(*address)),
+            ]))
+            .simple_serialize(&MoveTypeLayout::Struct(MoveStructLayout::Runtime(vec![
+                Address, U128,
+            ])));
+            return Ok(serialized);
+        }
         let raw_account = self.storage.get(address.as_slice());
 
         if let Some(raw_account) = raw_account {
