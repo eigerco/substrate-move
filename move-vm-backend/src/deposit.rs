@@ -1,11 +1,7 @@
 #[cfg(not(feature = "std"))]
 use alloc::{borrow::ToOwned, vec, vec::Vec};
 use lazy_static::lazy_static;
-use move_core_types::{
-    account_address::AccountAddress,
-    ident_str,
-    language_storage::{StructTag, TypeTag},
-};
+use move_core_types::{account_address::AccountAddress, ident_str, language_storage::StructTag};
 use serde::{Deserialize, Serialize};
 
 /// Mirroring structure of Move::deposit::Deposit
@@ -23,11 +19,12 @@ impl Into<(AccountAddress, u128)> for Deposit {
 }
 
 lazy_static! {
-    pub(crate) static ref DEPOSIT_TEMPLATE: StructTag = StructTag {
+    /// Parsing template for Move VM type -> Rust type conversion and matching
+    pub static ref DEPOSIT_TEMPLATE: StructTag = StructTag {
         address: ROOT_ADDRESS.clone(),
         module: ident_str!("deposit").to_owned(),
         name: ident_str!("Deposit").to_owned(),
-        type_params: vec![TypeTag::Address, TypeTag::U128],
+        type_params: vec![],
     };
     /// Publisher address of DepositModule and other `std`
     pub static ref ROOT_ADDRESS: AccountAddress = AccountAddress::from_hex_literal("0x01").unwrap();
