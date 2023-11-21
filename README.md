@@ -4,33 +4,16 @@
 
 ![Move logo](assets/color/SVG/Move_Logo_Design_Digital_Final_-01.svg)
 
-# The Move Language
+# MoveVM for the Substrate
 
-Move is a programming language for writing safe smart contracts originally developed at Facebook to power the Diem blockchain. Move is designed to be a platform-agnostic language to enable common libraries, tooling, and developer communities across diverse blockchains with vastly different data and execution models. Move's ambition is to become the "JavaScript of web3" in terms of ubiquity--when developers want to quickly write safe code involving assets, it should be written in Move.
+_This project is still in progress, so this document still needs to be updated._
 
-This repository is the official home of the Move virtual machine, bytecode verifier, compiler, prover, package manager, and book. For Move code examples and papers, check out [awesome-move](https://github.com/MystenLabs/awesome-move).
+This is a modified MoveVM fork for the use of MoveVM in the [pallet-move](https://github.com/eigerco/pallet-move) Substrate repo.
 
-## Quickstart
+## Requirements
 
-### Build the [Docker](https://www.docker.com/community/open-source/) Image for the Command Line Tool
-
-```
-docker build -t move/cli -f docker/move-cli/Dockerfile .
-```
-
-### Build a Test Project
-
-```
-cd ./language/documentation/tutorial/step_1/BasicCoin
-docker run -v `pwd`:/project move/cli build
-```
-
-Follow the [language/documentation/tutorial](./language/documentation/tutorial/README.md) to set up move for development.
-
-## Community
-
-* Join us on the [Move Discord](https://discord.gg/cPUmhe24Mz).
-* Browse code and content from the community at [awesome-move](https://github.com/MystenLabs/awesome-move).
+### smove
+`smove` is a package manager for Move language in Substrate. Follow the [instructions](https://github.com/eigerco/smove) to install it.
 
 ## License
 
