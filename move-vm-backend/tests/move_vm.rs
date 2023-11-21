@@ -59,7 +59,6 @@ fn read_script_bytes_from_project(project: &str, script_name: &str) -> Vec<u8> {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn publish_module_test() {
     let store = StorageMock::new();
@@ -76,7 +75,6 @@ fn publish_module_test() {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn publish_module_package_from_multiple_module_files() {
     let store = StorageMock::new();
@@ -109,7 +107,6 @@ fn publish_module_package_from_multiple_module_files() {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn publish_module_package_from_bundle_file() {
     let store = StorageMock::new();
@@ -125,7 +122,6 @@ fn publish_module_package_from_bundle_file() {
 
 #[allow(non_snake_case)]
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn publish_module_dependent_on_stdlib_natives() {
     let store = StorageMock::new();
@@ -157,7 +153,6 @@ fn publish_module_dependent_on_stdlib_natives() {
 
 #[allow(non_snake_case)]
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn publish_module_using_stdlib_full_fails() {
     let store = StorageMock::new();
@@ -179,7 +174,6 @@ fn publish_module_using_stdlib_full_fails() {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn get_module_and_module_abi() {
     let store = StorageMock::new();
@@ -204,7 +198,6 @@ fn get_module_and_module_abi() {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn get_resource() {
     let store = StorageMock::new();
@@ -262,7 +255,6 @@ fn get_resource() {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 fn execute_script_with_no_params_test() {
     let store = StorageMock::new();
     let vm = Mvm::new(store).unwrap();
@@ -280,7 +272,6 @@ fn execute_script_with_no_params_test() {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 fn execute_script_params_test() {
     let store = StorageMock::new();
     let vm = Mvm::new(store).unwrap();
@@ -299,7 +290,6 @@ fn execute_script_params_test() {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 fn execute_script_generics_test() {
     let store = StorageMock::new();
     let vm = Mvm::new(store).unwrap();
@@ -327,7 +317,6 @@ fn execute_script_generics_test() {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 fn execute_script_generics_incorrect_params_test() {
     let store = StorageMock::new();
     let vm = Mvm::new(store).unwrap();
@@ -356,7 +345,6 @@ fn execute_script_generics_incorrect_params_test() {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 fn execute_function_test() {
     let store = StorageMock::new();
     let vm = Mvm::new(store).unwrap();
