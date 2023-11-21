@@ -36,5 +36,12 @@ address 0x1 {
 			let Deposit { destination: _ , amount: balance } = borrow_global<Deposit>(of);
 			*balance
 		}
+
+		#[test(s= @0x1234, d= @0xCAFE, f= @0x1234)]
+		fun deposit_storage_test(s: signer, d: signer, f: signer) {
+		    do_deposit(s, signer::address_of(&d), 1234);
+		    assert!(exists<Deposit>(signer::address_of(&f)), 0);
+		    assert!(!exists<Deposit>(signer::address_of(&d)), 1);
+		}
 	}
 }
