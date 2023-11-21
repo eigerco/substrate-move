@@ -103,13 +103,13 @@ impl<S: Storage, Api: SubstrateAPI> Warehouse<S, Api> {
                 .collect::<Vec<(StructTag, Op<Vec<u8>>)>>()
             {
                 match res {
-                    Op::New(ref data) | Op::Modify(ref data) => {
+                    New(ref data) | Modify(ref data) => {
                         if let Ok(deposit) = bcs::from_bytes::<Deposit>(data) {
                             let (destination, amount) = deposit.into();
                             // make actual transaction using SubstrateApi
                             self.substrate_api
                                 .transfer(account, destination, amount)
-                                .map_err(|e| anyhow::Error::msg(e.to_string()))?;
+                                .map_err(|e| Error::msg(e.to_string()))?;
                         } else {
                             unprocessed_resources.push((tag, res));
                         }
