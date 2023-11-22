@@ -31,7 +31,7 @@ jobs:
 
       # move-vm-runtime
       - name: Install move-cli
-        run: cargo install --path ./language/tools/move-cli/ move-cli
+        run: cargo install --git  https://github.com/eigerco/smove --tag v0.2.0
 
       - name: Run move-vm-backend tests
-        run: cargo test -p move-vm-backend
+        run: cargo test -p move-vm-backend --features build-move-projects-for-test

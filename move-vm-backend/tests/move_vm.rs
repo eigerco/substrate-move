@@ -19,7 +19,8 @@ pub mod mock;
 /// Reads bytes from a file for the given path.
 /// Can panic if the file doesn't exist.
 fn read_bytes(file_path: &str) -> Vec<u8> {
-    std::fs::read(file_path).unwrap_or_else(|e| panic!("Can't read {file_path}: {e}"))
+    std::fs::read(file_path)
+        .unwrap_or_else(|e| panic!("Can't read {file_path}: {e} - make sure you run move-vm-backend/tests/assets/move-projects/smove-build-all.sh"))
 }
 
 /// Reads a precompiled Move module from our assets directory.
@@ -37,17 +38,6 @@ fn read_bundle_from_project(project: &str, bundle_name: &str) -> Vec<u8> {
     const MOVE_PROJECTS: &str = "tests/assets/move-projects";
 
     let path = format!("{MOVE_PROJECTS}/{project}/build/{project}/bundles/{bundle_name}.mvb");
-
-    read_bytes(&path)
-}
-
-/// Reads a precompiled Move stdlib module from our assets directory for specified project.
-/// This will be replaced in the future with a proper stdlib genesis initialization.
-fn read_stdlib_module_bytes_from_project(project: &str, stdlib_module_name: &str) -> Vec<u8> {
-    const MOVE_PROJECTS: &str = "tests/assets/move-projects";
-
-    let path =
-        format!("{MOVE_PROJECTS}/{project}/build/{project}/bytecode_modules/dependencies/MoveStdlib/{stdlib_module_name}.mv");
 
     read_bytes(&path)
 }
@@ -80,7 +70,6 @@ impl SubstrateAPI for Test {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn publish_module_test() {
     let store = StorageMock::new();
@@ -97,7 +86,6 @@ fn publish_module_test() {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn publish_module_package_from_multiple_module_files() {
     let store = StorageMock::new();
@@ -130,7 +118,6 @@ fn publish_module_package_from_multiple_module_files() {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn publish_module_package_from_bundle_file() {
     let store = StorageMock::new();
@@ -146,7 +133,6 @@ fn publish_module_package_from_bundle_file() {
 
 #[allow(non_snake_case)]
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn publish_module_dependent_on_stdlib_natives() {
     let store = StorageMock::new();
@@ -178,7 +164,6 @@ fn publish_module_dependent_on_stdlib_natives() {
 
 #[allow(non_snake_case)]
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn publish_module_using_stdlib_full_fails() {
     let store = StorageMock::new();
@@ -200,7 +185,6 @@ fn publish_module_using_stdlib_full_fails() {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn get_module_and_module_abi() {
     let store = StorageMock::new();
@@ -225,7 +209,6 @@ fn get_module_and_module_abi() {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn get_resource() {
     let store = StorageMock::new();
@@ -233,10 +216,10 @@ fn get_resource() {
     let mut gas_status = GasStatus::new_unmetered();
 
     let addr_std = AccountAddress::from_hex_literal("0x1").unwrap();
-    let module = read_stdlib_module_bytes_from_project("basic_coin", "signer");
-    let result = vm.publish_module(&module, addr_std, &mut gas_status);
+    let stdlib = move_stdlib::move_stdlib_bundle();
+    let result = vm.publish_module_package(&stdlib, addr_std, &mut gas_status);
 
-    assert!(result.is_ok(), "Failed to publish the stdlib module");
+    assert!(result.is_ok(), "Failed to publish the stdlib bundle");
 
     let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let module = read_module_bytes_from_project("basic_coin", "BasicCoin");
@@ -283,7 +266,6 @@ fn get_resource() {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 fn execute_script_with_no_params_test() {
     let store = StorageMock::new();
     let vm = Mvm::new(store, Test {}).unwrap();
@@ -301,7 +283,6 @@ fn execute_script_with_no_params_test() {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 fn execute_script_params_test() {
     let store = StorageMock::new();
     let vm = Mvm::new(store, Test {}).unwrap();
@@ -320,7 +301,6 @@ fn execute_script_params_test() {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 fn execute_script_generics_test() {
     let store = StorageMock::new();
     let vm = Mvm::new(store, Test {}).unwrap();
@@ -348,7 +328,6 @@ fn execute_script_generics_test() {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 fn execute_script_generics_incorrect_params_test() {
     let store = StorageMock::new();
     let vm = Mvm::new(store, Test {}).unwrap();
@@ -377,17 +356,16 @@ fn execute_script_generics_incorrect_params_test() {
 }
 
 #[test]
-#[ignore = "we need to build the move package before with a script before running the test"]
 fn execute_function_test() {
     let store = StorageMock::new();
     let vm = Mvm::new(store, Test {}).unwrap();
     let mut gas_status = GasStatus::new_unmetered();
 
     let addr_std = AccountAddress::from_hex_literal("0x1").unwrap();
-    let module = read_stdlib_module_bytes_from_project("basic_coin", "signer");
-    let result = vm.publish_module(&module, addr_std, &mut gas_status);
+    let stdlib = move_stdlib::move_stdlib_bundle();
+    let result = vm.publish_module_package(&stdlib, addr_std, &mut gas_status);
 
-    assert!(result.is_ok(), "Failed to publish the stdlib module");
+    assert!(result.is_ok(), "Failed to publish the stdlib bundle");
 
     let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let module = read_module_bytes_from_project("basic_coin", "BasicCoin");
