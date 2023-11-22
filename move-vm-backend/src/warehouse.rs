@@ -22,8 +22,7 @@ use move_core_types::effects::{
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::{ModuleId, StructTag};
 use move_core_types::resolver::{ModuleResolver, ResourceResolver};
-use move_core_types::value::MoveTypeLayout::U128;
-use move_core_types::value::{MoveFieldLayout, MoveStructLayout, MoveTypeLayout};
+use move_core_types::value::{MoveStructLayout, MoveTypeLayout};
 use move_vm_types::values::{Struct, Value};
 use serde::{Deserialize, Serialize};
 use MoveTypeLayout::Address;
@@ -173,7 +172,8 @@ impl<S: Storage, Api: SubstrateAPI> ResourceResolver for Warehouse<S, Api> {
                 Value::u128(self.substrate_api.get_balance(*address)),
             ]))
             .simple_serialize(&MoveTypeLayout::Struct(MoveStructLayout::Runtime(vec![
-                Address, U128,
+                Address,
+                MoveTypeLayout::U128,
             ])));
             return Ok(serialized);
         }
