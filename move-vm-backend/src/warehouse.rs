@@ -99,11 +99,7 @@ impl<S: Storage, Api: SubstrateAPI> Warehouse<S, Api> {
             let mut unprocessed_resources = vec![];
             AccountData::apply_changes(&mut store_account.modules, modules)?;
             // process Deposit
-            for (tag, res) in resources
-                .into_iter()
-                .filter(|r| r.0.eq(&DEPOSIT_TEMPLATE))
-                .collect::<Vec<(StructTag, Op<Vec<u8>>)>>()
-            {
+            for (tag, res) in resources {
                 match res {
                     New(ref data) | Modify(ref data) => {
                         if let Ok(deposit) = bcs::from_bytes::<Deposit>(data) {
