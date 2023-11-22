@@ -7,7 +7,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     build_move_projects()?;
 
     // SMOVE build our deposit code
-    Command::new("move")
+    Command::new("smove")
         .args(["build", "-p", "../deposit"])
         .output()
         .expect("failed to execute process");
@@ -20,7 +20,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .output()
         .expect("failed to copy new deposit.mv");
     // SMOVE build our deposit script
-    Command::new("move")
+    Command::new("smove")
         .args(["build", "-p", "../deposit/executor"])
         .output()
         .expect("failed to execute process");
