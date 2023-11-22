@@ -37,6 +37,7 @@ move-package = { path = "../tools/move-package" }
 
 [features]
 default = ["std", "address32"]
+stdlib-bytecode = []
 testing = []
 address20 = ["move-core-types/address20"]
 address32 = ["move-core-types/address32"]

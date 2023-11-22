@@ -18,6 +18,7 @@ pub mod natives;
 #[cfg(feature = "std")]
 pub mod doc;
 
+#[cfg(feature = "stdlib-bytecode")]
 /// Provides a precompiled bundle of bytecode modules.
 pub fn move_stdlib_bundle() -> &'static [u8] {
     include_bytes!("../build/MoveStdlib/bundles/MoveStdlib.mvb")
