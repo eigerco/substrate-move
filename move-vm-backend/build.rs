@@ -3,8 +3,9 @@ use std::process::Command;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Build move projects for the test purposes.
-    #[cfg(test)]
-    build_move_projects()?;
+    if std::env::var("PROFILE").unwrap() == "debug" {
+        build_move_projects()?;
+    }
 
     // SMOVE build our deposit code
     Command::new("smove")
