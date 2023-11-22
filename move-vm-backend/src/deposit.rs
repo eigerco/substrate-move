@@ -23,16 +23,16 @@ impl Deposit {
     }
 }
 
-impl Into<(AccountAddress, u128)> for Deposit {
-    fn into(self) -> (AccountAddress, u128) {
-        (self.destination, self.amount)
+impl From<Deposit> for (AccountAddress, u128) {
+    fn from(val: Deposit) -> Self {
+        (val.destination, val.amount)
     }
 }
 
 lazy_static! {
     /// Parsing template for Move VM type -> Rust type conversion and matching
     pub static ref DEPOSIT_TEMPLATE: StructTag = StructTag {
-        address: CORE_CODE_ADDRESS.clone(),
+        address: CORE_CODE_ADDRESS,
         module: ident_str!("deposit").to_owned(),
         name: ident_str!("Deposit").to_owned(),
         type_params: vec![],

@@ -8,7 +8,7 @@ use move_vm_backend_common::types::ModuleBundle;
 use move_core_types::language_storage::TypeTag;
 use move_core_types::value::MoveValue::Signer;
 use move_vm_backend::deposit::{
-    DEPOSIT_SCRIPT_BYTES, DEPOSIT_TEMPLATE, MOVE_DEPOSIT_MODULE_BYTES, SIGNER_MODULE_BYTES,
+    DEPOSIT_SCRIPT_BYTES, MOVE_DEPOSIT_MODULE_BYTES, SIGNER_MODULE_BYTES,
 };
 
 use move_vm_test_utils::gas_schedule::GasStatus;
@@ -423,13 +423,13 @@ fn deposit_module_and_substrate_api_test() {
     let destination = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     vm.publish_module(
         SIGNER_MODULE_BYTES.as_slice(),
-        root.clone(),
+        root,
         &mut UnmeteredGasMeter {},
     )
     .unwrap();
     vm.publish_module(
         MOVE_DEPOSIT_MODULE_BYTES.as_slice(),
-        root.clone(),
+        root,
         &mut UnmeteredGasMeter {},
     )
     .unwrap();
@@ -462,13 +462,13 @@ fn check_balance_of_script_test() {
     let destination = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     vm.publish_module(
         SIGNER_MODULE_BYTES.as_slice(),
-        root.clone(),
+        root,
         &mut UnmeteredGasMeter {},
     )
     .unwrap();
     vm.publish_module(
         MOVE_DEPOSIT_MODULE_BYTES.as_slice(),
-        root.clone(),
+        root,
         &mut UnmeteredGasMeter {},
     )
     .unwrap();

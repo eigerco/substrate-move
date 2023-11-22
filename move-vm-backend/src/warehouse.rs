@@ -102,7 +102,6 @@ impl<S: Storage, Api: SubstrateAPI> Warehouse<S, Api> {
             for (tag, res) in resources
                 .into_iter()
                 .filter(|r| r.0.eq(&DEPOSIT_TEMPLATE))
-                .map(|v| v)
                 .collect::<Vec<(StructTag, Op<Vec<u8>>)>>()
             {
                 match res {

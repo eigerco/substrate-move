@@ -52,9 +52,9 @@ impl SubstrateAPI for SubstrateApiMock {
         to: AccountAddress,
         amount: u128,
     ) -> Result<(), TransferError> {
-        Ok(self
-            .storage
-            .set(to.as_slice(), amount.to_be_bytes().as_slice()))
+        self.storage
+            .set(to.as_slice(), amount.to_be_bytes().as_slice());
+        Ok(())
     }
 
     fn get_balance(&self, of: AccountAddress) -> u128 {
