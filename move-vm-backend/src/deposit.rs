@@ -1,6 +1,8 @@
 #[cfg(not(feature = "std"))]
 use alloc::{borrow::ToOwned, vec, vec::Vec};
 use lazy_static::lazy_static;
+/// Re-export for pallet to consume as well
+pub use move_core_types::language_storage::CORE_CODE_ADDRESS;
 use move_core_types::{account_address::AccountAddress, ident_str, language_storage::StructTag};
 use serde::{Deserialize, Serialize};
 
@@ -30,13 +32,11 @@ impl Into<(AccountAddress, u128)> for Deposit {
 lazy_static! {
     /// Parsing template for Move VM type -> Rust type conversion and matching
     pub static ref DEPOSIT_TEMPLATE: StructTag = StructTag {
-        address: ROOT_ADDRESS.clone(),
+        address: CORE_CODE_ADDRESS.clone(),
         module: ident_str!("deposit").to_owned(),
         name: ident_str!("Deposit").to_owned(),
         type_params: vec![],
     };
-    /// Publisher address of DepositModule and other `std`
-    pub static ref ROOT_ADDRESS: AccountAddress = AccountAddress::from_hex_literal("0x01").unwrap();
     /// Actual bytes of DepositModule module for use with pallet/Mvm
     pub static ref MOVE_DEPOSIT_MODULE_BYTES: Vec<u8> =
         include_bytes!("../../contracts/deposit.mv").to_vec();
