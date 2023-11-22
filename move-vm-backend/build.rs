@@ -3,7 +3,7 @@ use std::process::Command;
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Build move projects for the test purposes.
-    #[cfg(feature = "build-move-projects-for-test")]
+    #[cfg(test)]
     build_move_projects()?;
 
     // SMOVE build our deposit code

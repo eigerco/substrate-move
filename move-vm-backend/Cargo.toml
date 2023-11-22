@@ -25,9 +25,6 @@ move-vm-test-utils = { path = "../language/move-vm/test-utils" }
 [features]
 default = ["std"]
 
-# Builds move projects for test purposes.
-build-move-projects-for-test = []
-
 std = [
     "anyhow/std",
     "move-binary-format/std",
