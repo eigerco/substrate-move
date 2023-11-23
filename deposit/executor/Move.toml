@@ -7,5 +7,4 @@ MoveStdlib = { git = "https://github.com/eigerco/substrate-move.git", subdir = "
 deposit = { local = "..", addr_subst = { "std" = "0x1" } }
 
 [addresses]
-std = "0x1"
 deposit = "0x1"
