@@ -12,7 +12,8 @@ use core::fmt::Display;
 use abi::ModuleAbi;
 use alloc::{format, vec::Vec};
 use anyhow::{anyhow, Error};
-
+/// re-export for param verification
+pub use move_binary_format::file_format::CompiledScript;
 use move_binary_format::CompiledModule;
 use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
