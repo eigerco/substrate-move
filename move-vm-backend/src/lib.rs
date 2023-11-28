@@ -7,24 +7,28 @@ pub mod deposit;
 pub mod storage;
 mod warehouse;
 
-use crate::storage::Storage;
-use crate::warehouse::Warehouse;
+use core::fmt::Display;
+
 use abi::ModuleAbi;
 use alloc::{format, vec::Vec};
 use anyhow::{anyhow, Error};
-use core::fmt::Display;
+
 use move_binary_format::CompiledModule;
 use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
+
 use move_core_types::{
     language_storage::{ModuleId, TypeTag, CORE_CODE_ADDRESS},
     resolver::{ModuleResolver, ResourceResolver},
 };
+use move_vm_runtime::move_vm::MoveVM;
+
 use move_stdlib::natives::{all_natives, GasParameters};
 use move_vm_backend_common::types::ModuleBundle;
-use move_vm_runtime::move_vm::MoveVM;
 use move_vm_types::gas::GasMeter;
-use move_vm_types::loaded_data::runtime_types::Type;
+
+use crate::storage::Storage;
+use crate::warehouse::Warehouse;
 
 /// Represents failures that might occure during native token transaction
 #[derive(Debug)]
@@ -301,11 +305,5 @@ where
         })?;
 
         self.warehouse.apply_changes(changeset)
-    }
-
-    pub fn load_function_args(&self, script: impl AsRef<[u8]>) -> Result<Vec<Type>, Error> {
-        Ok(self
-            .vm
-            .get_script_function_arguments(script, &self.warehouse)?)
     }
 }
