@@ -2,12 +2,11 @@
 // Copyright (c) The Move Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-use alloc::{collections::BTreeSet, sync::Arc};
-
 use crate::{
     config::VMConfig, data_cache::TransactionDataCache, native_extensions::NativeContextExtensions,
     native_functions::NativeFunction, runtime::VMRuntime, session::Session,
 };
+use alloc::{collections::BTreeSet, sync::Arc};
 use move_binary_format::{
     errors::{Location, VMResult},
     CompiledModule,
@@ -16,6 +15,7 @@ use move_core_types::{
     account_address::AccountAddress, identifier::Identifier, language_storage::ModuleId,
     metadata::Metadata, resolver::MoveResolver,
 };
+use move_vm_types::loaded_data::runtime_types::Type;
 
 pub struct MoveVM {
     runtime: VMRuntime,
@@ -126,5 +126,24 @@ impl MoveVM {
     ///   call this directly via the loader instead of the VM.
     pub fn get_module_metadata(&self, module: ModuleId, key: &[u8]) -> Option<Metadata> {
         self.runtime.loader().get_metadata(module, key)
+    }
+
+    /// Loads given script into memory and returns arguments types on success
+    pub fn get_script_function_arguments<'r, S: MoveResolver>(
+        &self,
+        script: impl AsRef<[u8]>,
+        remote: &'r S,
+    ) -> VMResult<Vec<Type>> {
+        Ok(self
+            .runtime
+            .loader()
+            .load_script(
+                script.as_ref(),
+                &vec![],
+                &TransactionDataCache::new(remote, self.runtime.loader()),
+            )?
+            .0
+            .parameter_types()
+            .into())
     }
 }
