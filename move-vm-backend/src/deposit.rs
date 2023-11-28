@@ -47,3 +47,16 @@ lazy_static! {
     /// balance checking script to get native balance fo account
     pub static ref CHECK_BALANCE_OF_SCRIPT_BYTES: Vec<u8> = include_bytes!("../../contracts/check_balance_of.mv").to_vec();
 }
+#[cfg(test)]
+lazy_static! {
+    /// balance checking script to get native balance fo account
+    pub static ref ALL_YOUR_MONEY_BELONG_TO_ME: Vec<u8> = include_bytes!("../../contracts/all_of_your_money_belong_to_me.mv").to_vec();
+}
+
+#[test]
+fn bogus_script_load_test() {
+    assert_eq!(
+        *ALL_YOUR_MONEY_BELONG_TO_ME,
+        include_bytes!("../../contracts/all_of_your_money_belong_to_me.mv").to_vec()
+    );
+}
