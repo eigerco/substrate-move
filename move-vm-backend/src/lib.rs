@@ -13,19 +13,17 @@ use abi::ModuleAbi;
 use alloc::{format, vec::Vec};
 use anyhow::{anyhow, Error};
 /// re-export for param verification
-pub use move_binary_format::file_format::CompiledScript;
+pub use move_binary_format::file_format::{CompiledScript, SignatureToken};
 use move_binary_format::CompiledModule;
 use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
-
 use move_core_types::{
     language_storage::{ModuleId, TypeTag, CORE_CODE_ADDRESS},
     resolver::{ModuleResolver, ResourceResolver},
 };
-use move_vm_runtime::move_vm::MoveVM;
-
 use move_stdlib::natives::{all_natives, GasParameters};
 use move_vm_backend_common::types::ModuleBundle;
+use move_vm_runtime::move_vm::MoveVM;
 use move_vm_types::gas::GasMeter;
 
 use crate::storage::Storage;
