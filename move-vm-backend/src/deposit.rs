@@ -48,4 +48,8 @@ lazy_static! {
     pub static ref CHECK_BALANCE_OF_SCRIPT_BYTES: Vec<u8> = include_bytes!("../../contracts/check_balance_of.mv").to_vec();
     /// test only script to check if parameter parsing works as expected
     pub static ref ALL_YOUR_MONEY_BELONG_TO_ME: Vec<u8> = include_bytes!("../../contracts/all_of_your_money_belong_to_me.mv").to_vec();
+    /// test only script to check if struct wropper around signer is captured alright
+    pub static ref BOGUS_SIGNER_WRAPPER_SCRIPT: Vec<u8> = include_bytes!("../../contracts/bogus_struct.mv").to_vec();
+    ///  test only bogus Test module wrapper struct around signer
+    pub static ref BOGUS_SIGNER_WRAPPER_MODULE: Vec<u8> = include_bytes!("../../contracts/test_struct.mv").to_vec();
 }
