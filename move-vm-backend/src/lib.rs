@@ -162,14 +162,13 @@ where
         address: AccountAddress,
         gas: &mut impl GasMeter,
     ) -> VmResult {
-        let modules = ModuleBundle::try_from(package)
-            .map_err(|e| {
-                VmResult::new(
-                    StatusCode::UNKNOWN_MODULE,
-                    Some(e.to_string()),
-                    gas.balance_internal().into(),
-                )
-            });
+        let modules = ModuleBundle::try_from(package).map_err(|e| {
+            VmResult::new(
+                StatusCode::UNKNOWN_MODULE,
+                Some(e.to_string()),
+                gas.balance_internal().into(),
+            )
+        });
 
         let modules = match modules {
             Ok(modules) => modules.into_inner(),
