@@ -6,12 +6,13 @@ mod abi;
 pub mod deposit;
 pub mod storage;
 mod warehouse;
-
-use core::fmt::Display;
-
+use crate::storage::Storage;
+use crate::warehouse::Warehouse;
 use abi::ModuleAbi;
 use alloc::{format, vec::Vec};
 use anyhow::{anyhow, Error};
+use core::fmt::Display;
+use move_binary_format::file_format::StructHandleIndex;
 /// re-export for param verification
 pub use move_binary_format::file_format::{CompiledScript, SignatureToken};
 use move_binary_format::CompiledModule;
@@ -25,9 +26,7 @@ use move_stdlib::natives::{all_natives, GasParameters};
 use move_vm_backend_common::types::ModuleBundle;
 use move_vm_runtime::move_vm::MoveVM;
 use move_vm_types::gas::GasMeter;
-
-use crate::storage::Storage;
-use crate::warehouse::Warehouse;
+use move_vm_types::loaded_data::runtime_types::{CachedStructIndex, Type};
 
 /// Represents failures that might occure during native token transaction
 #[derive(Debug)]
@@ -304,5 +303,43 @@ where
         })?;
 
         self.warehouse.apply_changes(changeset)
+    }
+
+    pub fn struct_has_signer_property(&self, idx: CachedStructIndex) -> Vec<SignatureToken> {
+        let sess = self.vm.new_session(&self.warehouse);
+        let Some(s) = sess.get_struct_type(CachedStructIndex(idx.0)) else {
+            return vec![]; // no struct loaded
+        };
+        s.fields
+            .clone()
+            .into_iter()
+            .map(Self::type_to_token)
+            .collect()
+    }
+
+    // WARN: non-reverse for matching purposes only!
+    fn type_to_token(type_s: Type) -> SignatureToken {
+        match type_s {
+            Type::Signer => SignatureToken::Signer,
+            Type::Address => SignatureToken::Address,
+            Type::Bool => SignatureToken::Bool,
+            Type::U8 => SignatureToken::U8,
+            Type::U16 => SignatureToken::U16,
+            Type::U32 => SignatureToken::U32,
+            Type::U64 => SignatureToken::U64,
+            Type::U128 => SignatureToken::U128,
+            Type::U256 => SignatureToken::U256,
+            Type::Struct(csi) => {
+                SignatureToken::Struct(StructHandleIndex(csi.0.try_into().unwrap_or_default()))
+            }
+            Type::StructInstantiation(csi, types) => SignatureToken::StructInstantiation(
+                StructHandleIndex(csi.0.try_into().unwrap_or_default()),
+                types.into_iter().map(Self::type_to_token).collect(),
+            ),
+            Type::Vector(v) => Self::type_to_token(*v),
+            Type::Reference(r) => Self::type_to_token(*r),
+            Type::MutableReference(m) => Self::type_to_token(*m),
+            Type::TyParam(p) => SignatureToken::TypeParameter(p),
+        }
     }
 }
