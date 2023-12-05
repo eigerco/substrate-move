@@ -305,7 +305,7 @@ where
         self.warehouse.apply_changes(changeset)
     }
 
-    pub fn struct_has_signer_property(&self, idx: CachedStructIndex) -> Vec<SignatureToken> {
+    pub fn get_struct_members(&self, idx: StructHandleIndex) -> Vec<SignatureToken> {
         let sess = self.vm.new_session(&self.warehouse);
         let Some(s) = sess.get_struct_type(CachedStructIndex(idx.0)) else {
             return vec![]; // no struct loaded
