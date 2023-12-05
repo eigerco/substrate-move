@@ -169,9 +169,12 @@ where
                     Some(e.to_string()),
                     gas.balance_internal().into(),
                 )
-            })
-            .unwrap()
-            .into_inner();
+            });
+
+        let modules = match modules {
+            Ok(modules) => modules.into_inner(),
+            Err(e) => return e,
+        };
 
         let mut sess = self.vm.new_session(&self.warehouse);
 
