@@ -3,39 +3,75 @@
 extern crate alloc;
 
 mod abi;
+pub mod deposit;
 pub mod storage;
 mod warehouse;
-
+use crate::storage::Storage;
+use crate::warehouse::Warehouse;
 use abi::ModuleAbi;
-use alloc::vec::Vec;
+use alloc::{format, vec::Vec};
 use anyhow::{anyhow, Error};
-
+use core::fmt::Display;
+use move_binary_format::file_format::StructHandleIndex;
+/// re-export for param verification
+pub use move_binary_format::file_format::{CompiledScript, SignatureToken};
 use move_binary_format::CompiledModule;
 use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
-
 use move_core_types::{
     language_storage::{ModuleId, TypeTag, CORE_CODE_ADDRESS},
     resolver::{ModuleResolver, ResourceResolver},
 };
-use move_vm_runtime::move_vm::MoveVM;
-
 use move_stdlib::natives::{all_natives, GasParameters};
 use move_vm_backend_common::types::ModuleBundle;
+use move_vm_runtime::move_vm::MoveVM;
 use move_vm_types::gas::GasMeter;
+use move_vm_types::loaded_data::runtime_types::{CachedStructIndex, Type};
 
-use crate::storage::Storage;
-use crate::warehouse::Warehouse;
+/// Represents failures that might occure during native token transaction
+#[derive(Debug)]
+pub enum TransferError {
+    InsuficientBalance,
+    NoSessionTokenPresent,
+}
+
+impl Display for TransferError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str(format!("{:?}", self).as_str())
+    }
+}
+
+pub trait SubstrateAPI {
+    /// Callback signature of method to do the transfer between accounts
+    /// # Params
+    /// * `from` - 'AccountAddress' is of a sender;
+    /// * `to` - 'AccountAddress' is of recepient;
+    /// * `amount` - 'u128' is amount to transfer;
+    /// # Returns
+    /// * Result of success or 'TransferError' variant on error.
+    fn transfer(
+        &self,
+        from: AccountAddress,
+        to: AccountAddress,
+        amount: u128,
+    ) -> Result<(), TransferError>;
+    /// Callback to fetch account's balance in Substrate native currency
+    /// # Params
+    /// `of` - 'AccountAddress' of the account in question;
+    /// # Returns 'u128' value of account's balance.
+    fn get_balance(&self, of: AccountAddress) -> u128;
+}
 
 /// Main MoveVM structure, which is used to represent the virutal machine itself.
-pub struct Mvm<S>
+pub struct Mvm<S, Api>
 where
     S: Storage,
+    Api: SubstrateAPI,
 {
     // MoveVM instance - from move_vm_runtime crate
     vm: MoveVM,
     // Storage instance
-    warehouse: Warehouse<S>,
+    warehouse: Warehouse<S, Api>,
 }
 
 /// Call type used to determine if we are calling script or function inside some module.
@@ -68,20 +104,22 @@ struct Transaction {
     pub args: Vec<Vec<u8>>,
 }
 
-impl<S> Mvm<S>
+impl<S, Api> Mvm<S, Api>
 where
     S: Storage,
+    Api: SubstrateAPI,
 {
     /// Create a new Move VM with the given storage.
-    pub fn new(storage: S) -> Result<Mvm<S>, Error> {
-        Self::new_with_config(storage)
+    pub fn new(storage: S, substrate_api: Api) -> Result<Mvm<S, Api>, Error> {
+        Self::new_with_config(storage, substrate_api)
     }
 
     /// Create a new Move VM with the given storage and configuration.
     pub(crate) fn new_with_config(
         storage: S,
+        substrate_api: Api,
         // config: VMConfig,
-    ) -> Result<Mvm<S>, Error> {
+    ) -> Result<Mvm<S, Api>, Error> {
         Ok(Mvm {
             vm: MoveVM::new(all_natives(CORE_CODE_ADDRESS, GasParameters::zeros())).map_err(
                 |err| {
@@ -89,7 +127,7 @@ where
                     anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
                 },
             )?,
-            warehouse: Warehouse::new(storage),
+            warehouse: Warehouse::new(storage, substrate_api),
         })
     }
 
@@ -265,5 +303,43 @@ where
         })?;
 
         self.warehouse.apply_changes(changeset)
+    }
+
+    pub fn get_struct_members(&self, idx: StructHandleIndex) -> Vec<SignatureToken> {
+        let sess = self.vm.new_session(&self.warehouse);
+        let Some(s) = sess.get_struct_type(CachedStructIndex(idx.0.into())) else {
+            return vec![]; // no struct loaded
+        };
+        s.fields
+            .clone()
+            .into_iter()
+            .map(Self::type_to_token)
+            .collect()
+    }
+
+    // WARN: non-reverse for matching purposes only!
+    fn type_to_token(type_s: Type) -> SignatureToken {
+        match type_s {
+            Type::Signer => SignatureToken::Signer,
+            Type::Address => SignatureToken::Address,
+            Type::Bool => SignatureToken::Bool,
+            Type::U8 => SignatureToken::U8,
+            Type::U16 => SignatureToken::U16,
+            Type::U32 => SignatureToken::U32,
+            Type::U64 => SignatureToken::U64,
+            Type::U128 => SignatureToken::U128,
+            Type::U256 => SignatureToken::U256,
+            Type::Struct(csi) => {
+                SignatureToken::Struct(StructHandleIndex(csi.0.try_into().unwrap_or_default()))
+            }
+            Type::StructInstantiation(csi, types) => SignatureToken::StructInstantiation(
+                StructHandleIndex(csi.0.try_into().unwrap_or_default()),
+                types.into_iter().map(Self::type_to_token).collect(),
+            ),
+            Type::Vector(v) => Self::type_to_token(*v),
+            Type::Reference(r) => Self::type_to_token(*r),
+            Type::MutableReference(m) => Self::type_to_token(*m),
+            Type::TyParam(p) => SignatureToken::TypeParameter(p),
+        }
     }
 }

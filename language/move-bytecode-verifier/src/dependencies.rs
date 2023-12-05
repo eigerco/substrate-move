@@ -246,7 +246,8 @@ fn verify_imported_structs(context: &Context) -> PartialVMResult<()> {
                         StatusCode::TYPE_MISMATCH,
                         IndexKind::StructHandle,
                         idx as TableIndex,
-                    ));
+                    )
+                    .with_message("incompatible struct abilities".to_string()));
                 }
             }
             None => {
@@ -287,7 +288,11 @@ fn verify_imported_functions(context: &Context) -> PartialVMResult<()> {
                         StatusCode::TYPE_MISMATCH,
                         IndexKind::FunctionHandle,
                         idx as TableIndex,
-                    ));
+                    )
+                    .with_message(format!(
+                        "incompatible type parameters for function. expected {:?}, received: {:?}",
+                        function_handle.type_parameters, def_handle.type_parameters
+                    )));
                 }
                 // same parameters
                 let handle_params = context.resolver.signature_at(function_handle.parameters);
@@ -428,7 +433,12 @@ fn compare_cross_module_signatures(
     def_module: &CompiledModule,
 ) -> PartialVMResult<()> {
     if handle_sig.len() != def_sig.len() {
-        return Err(PartialVMError::new(StatusCode::TYPE_MISMATCH));
+        return Err(
+            PartialVMError::new(StatusCode::TYPE_MISMATCH).with_message(format!(
+                "wrong signature size provided: {:?} expected: {:?}",
+                handle_sig, def_sig
+            )),
+        );
     }
     for (handle_type, def_type) in handle_sig.iter().zip(def_sig) {
         compare_types(context, handle_type, def_type, def_module)?;
@@ -471,7 +481,12 @@ fn compare_types(
         }
         (SignatureToken::TypeParameter(idx1), SignatureToken::TypeParameter(idx2)) => {
             if idx1 != idx2 {
-                Err(PartialVMError::new(StatusCode::TYPE_MISMATCH))
+                Err(
+                    PartialVMError::new(StatusCode::TYPE_MISMATCH).with_message(format!(
+                        "Signature token types mismatch. Expected {}, got {}",
+                        idx1, idx2
+                    )),
+                )
             } else {
                 Ok(())
             }
@@ -490,7 +505,11 @@ fn compare_types(
         | (SignatureToken::TypeParameter(_), _)
         | (SignatureToken::U16, _)
         | (SignatureToken::U32, _)
-        | (SignatureToken::U256, _) => Err(PartialVMError::new(StatusCode::TYPE_MISMATCH)),
+        | (SignatureToken::U256, _) => Err(PartialVMError::new(StatusCode::TYPE_MISMATCH)
+            .with_message(format!(
+                "Incomparable signature types. Handle {:?}; Defined {:?}",
+                handle_type, def_type
+            ))),
     }
 }
 
@@ -513,7 +532,8 @@ fn compare_structs(
     let def_struct_name = def_module.identifier_at(def_struct_handle.name);
 
     if module_id != def_module_id || struct_name != def_struct_name {
-        Err(PartialVMError::new(StatusCode::TYPE_MISMATCH))
+        Err(PartialVMError::new(StatusCode::TYPE_MISMATCH)
+            .with_message("Module id or struct name invalid.".to_string()))
     } else {
         Ok(())
     }

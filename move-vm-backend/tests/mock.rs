@@ -1,7 +1,8 @@
+use move_core_types::account_address::AccountAddress;
+use move_vm_backend::storage::Storage;
+use move_vm_backend::{SubstrateAPI, TransferError};
 use std::cell::RefCell;
 use std::collections::HashMap;
-
-use move_vm_backend::storage::Storage;
 
 // Mock storage implementation for testing
 #[derive(Clone, Debug)]
@@ -37,5 +38,30 @@ impl Storage for StorageMock {
     fn remove(&self, key: &[u8]) {
         let mut data = self.data.borrow_mut();
         data.remove(key);
+    }
+}
+
+pub struct SubstrateApiMock {
+    pub storage: StorageMock,
+}
+
+impl SubstrateAPI for SubstrateApiMock {
+    fn transfer(
+        &self,
+        _from: AccountAddress,
+        to: AccountAddress,
+        amount: u128,
+    ) -> Result<(), TransferError> {
+        self.storage
+            .set(to.as_slice(), amount.to_be_bytes().as_slice());
+        Ok(())
+    }
+
+    fn get_balance(&self, of: AccountAddress) -> u128 {
+        if let Some(b_data) = self.storage.get(of.as_slice()) {
+            u128::from_be_bytes(b_data.try_into().unwrap())
+        } else {
+            123
+        }
     }
 }

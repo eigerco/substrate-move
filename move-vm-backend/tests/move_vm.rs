@@ -1,14 +1,18 @@
-use crate::mock::StorageMock;
-use move_vm_backend::Mvm;
-
+use crate::mock::{StorageMock, SubstrateApiMock};
 use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::StructTag;
+use move_vm_backend::{deposit::CHECK_BALANCE_OF_SCRIPT_BYTES, Mvm, SubstrateAPI, TransferError};
 use move_vm_backend_common::types::ModuleBundle;
 
 use move_core_types::language_storage::TypeTag;
+use move_core_types::value::MoveValue::Signer;
+use move_vm_backend::deposit::{
+    DEPOSIT_SCRIPT_BYTES, MOVE_DEPOSIT_MODULE_BYTES, SIGNER_MODULE_BYTES,
+};
 
 use move_vm_test_utils::gas_schedule::GasStatus;
+use move_vm_types::gas::UnmeteredGasMeter;
 
 pub mod mock;
 
@@ -48,11 +52,28 @@ fn read_script_bytes_from_project(project: &str, script_name: &str) -> Vec<u8> {
     read_bytes(&path)
 }
 
+struct SimpleSubstrateApiMock {}
+
+impl SubstrateAPI for SimpleSubstrateApiMock {
+    fn transfer(
+        &self,
+        _from: AccountAddress,
+        _to: AccountAddress,
+        _amount: u128,
+    ) -> Result<(), TransferError> {
+        Ok(())
+    }
+
+    fn get_balance(&self, _of: AccountAddress) -> u128 {
+        1
+    }
+}
+
 #[test]
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn publish_module_test() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store).unwrap();
+    let vm = Mvm::new(store, SimpleSubstrateApiMock {}).unwrap();
 
     let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let module = read_module_bytes_from_project("empty", "Empty");
@@ -68,7 +89,7 @@ fn publish_module_test() {
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn publish_module_package_from_multiple_module_files() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store).unwrap();
+    let vm = Mvm::new(store, SimpleSubstrateApiMock {}).unwrap();
     let mut gas_status = GasStatus::new_unmetered();
 
     let module_1 = read_module_bytes_from_project("using_stdlib_natives", "Vector");
@@ -84,7 +105,7 @@ fn publish_module_package_from_multiple_module_files() {
 
     // Recreate the storage and the MoveVM
     let store = StorageMock::new();
-    let vm = Mvm::new(store).unwrap();
+    let vm = Mvm::new(store, SimpleSubstrateApiMock {}).unwrap();
     // Order matters - we cannot publish module_2 before module_1!
     let modules = ModuleBundle::new(vec![module_2, module_1])
         .encode()
@@ -100,7 +121,7 @@ fn publish_module_package_from_multiple_module_files() {
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn publish_module_package_from_bundle_file() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store).unwrap();
+    let vm = Mvm::new(store, SimpleSubstrateApiMock {}).unwrap();
     let mut gas_status = GasStatus::new_unmetered();
 
     let bundle = read_bundle_from_project("using_stdlib_natives", "using_stdlib_natives");
@@ -115,7 +136,7 @@ fn publish_module_package_from_bundle_file() {
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn publish_module_dependent_on_stdlib_natives() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store).unwrap();
+    let vm = Mvm::new(store, SimpleSubstrateApiMock {}).unwrap();
     let mut gas_status = GasStatus::new_unmetered();
 
     let mod_using_stdlib_natives = read_module_bytes_from_project("using_stdlib_natives", "Vector");
@@ -146,7 +167,7 @@ fn publish_module_dependent_on_stdlib_natives() {
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn publish_module_using_stdlib_full_fails() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store).unwrap();
+    let vm = Mvm::new(store, SimpleSubstrateApiMock {}).unwrap();
     let mut gas_status = GasStatus::new_unmetered();
 
     let mod_using_stdlib_natives =
@@ -167,7 +188,7 @@ fn publish_module_using_stdlib_full_fails() {
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn get_module_and_module_abi() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store).unwrap();
+    let vm = Mvm::new(store, SimpleSubstrateApiMock {}).unwrap();
 
     let module = read_module_bytes_from_project("using_stdlib_natives", "Vector");
     let address = AccountAddress::from_hex_literal("0x2").unwrap();
@@ -191,7 +212,7 @@ fn get_module_and_module_abi() {
 // This test heavily depends on Move.toml files for thes used Move packages.
 fn get_resource() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store).unwrap();
+    let vm = Mvm::new(store, SimpleSubstrateApiMock {}).unwrap();
     let mut gas_status = GasStatus::new_unmetered();
 
     let addr_std = AccountAddress::from_hex_literal("0x1").unwrap();
@@ -247,7 +268,7 @@ fn get_resource() {
 #[test]
 fn execute_script_with_no_params_test() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store).unwrap();
+    let vm = Mvm::new(store, SimpleSubstrateApiMock {}).unwrap();
 
     let script = read_script_bytes_from_project("simple_scripts", "empty_loop");
 
@@ -264,7 +285,7 @@ fn execute_script_with_no_params_test() {
 #[test]
 fn execute_script_params_test() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store).unwrap();
+    let vm = Mvm::new(store, SimpleSubstrateApiMock {}).unwrap();
 
     let script = read_script_bytes_from_project("simple_scripts", "empty_loop_param");
 
@@ -282,7 +303,7 @@ fn execute_script_params_test() {
 #[test]
 fn execute_script_generics_test() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store).unwrap();
+    let vm = Mvm::new(store, SimpleSubstrateApiMock {}).unwrap();
 
     let script = read_script_bytes_from_project("simple_scripts", "generic_1");
 
@@ -309,7 +330,7 @@ fn execute_script_generics_test() {
 #[test]
 fn execute_script_generics_incorrect_params_test() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store).unwrap();
+    let vm = Mvm::new(store, SimpleSubstrateApiMock {}).unwrap();
 
     let script = read_script_bytes_from_project("simple_scripts", "generic_1");
 
@@ -337,7 +358,7 @@ fn execute_script_generics_incorrect_params_test() {
 #[test]
 fn execute_function_test() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store).unwrap();
+    let vm = Mvm::new(store, SimpleSubstrateApiMock {}).unwrap();
     let mut gas_status = GasStatus::new_unmetered();
 
     let addr_std = AccountAddress::from_hex_literal("0x1").unwrap();
@@ -368,4 +389,76 @@ fn execute_function_test() {
     );
 
     assert!(result.is_ok(), "script execution failed");
+}
+
+#[test]
+fn deposit_module_and_substrate_api_test() {
+    let api = SubstrateApiMock {
+        storage: StorageMock::new(),
+    };
+    let vm = Mvm::new(StorageMock::new(), api).unwrap();
+    let root = AccountAddress::from_hex_literal("0x01").unwrap();
+    let destination = AccountAddress::from_hex_literal("0xCAFE").unwrap();
+    vm.publish_module(
+        SIGNER_MODULE_BYTES.as_slice(),
+        root,
+        &mut UnmeteredGasMeter {},
+    )
+    .unwrap();
+    vm.publish_module(
+        MOVE_DEPOSIT_MODULE_BYTES.as_slice(),
+        root,
+        &mut UnmeteredGasMeter {},
+    )
+    .unwrap();
+    vm.execute_script(
+        DEPOSIT_SCRIPT_BYTES.as_slice(),
+        vec![],
+        vec![
+            &bcs::to_bytes(&Signer(root)).unwrap(),
+            &bcs::to_bytes(&destination).unwrap(),
+            &bcs::to_bytes(&123u128).unwrap(),
+        ],
+        &mut UnmeteredGasMeter {},
+    )
+    .unwrap();
+    // Verify stuff was not actually stored
+    // assert!(!vm
+    //     .get_resource(&destination, &bcs::to_bytes(&*DEPOSIT_TEMPLATE).unwrap())
+    //     .unwrap()
+    //     .is_some());
+    // TODO: check balance chenged
+}
+
+#[test]
+fn check_balance_of_script_test() {
+    let api = SubstrateApiMock {
+        storage: StorageMock::new(),
+    };
+    let vm = Mvm::new(StorageMock::new(), api).unwrap();
+    let root = AccountAddress::from_hex_literal("0x01").unwrap();
+    let destination = AccountAddress::from_hex_literal("0xCAFE").unwrap();
+    vm.publish_module(
+        SIGNER_MODULE_BYTES.as_slice(),
+        root,
+        &mut UnmeteredGasMeter {},
+    )
+    .unwrap();
+    vm.publish_module(
+        MOVE_DEPOSIT_MODULE_BYTES.as_slice(),
+        root,
+        &mut UnmeteredGasMeter {},
+    )
+    .unwrap();
+    // script asserts internally
+    vm.execute_script(
+        CHECK_BALANCE_OF_SCRIPT_BYTES.as_slice(),
+        vec![],
+        vec![
+            &bcs::to_bytes(&destination).unwrap(),
+            &bcs::to_bytes(&123u128).unwrap(),
+        ],
+        &mut UnmeteredGasMeter {},
+    )
+    .unwrap();
 }

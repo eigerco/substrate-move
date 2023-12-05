@@ -12,9 +12,7 @@ pub struct ModuleBundle {
 impl ModuleBundle {
     /// Create a new ModuleBundle.
     pub fn new(modules: Vec<Vec<u8>>) -> Self {
-        Self {
-            modules
-        }
+        Self { modules }
     }
 
     /// Gets module bytecodes.

@@ -30,4 +30,4 @@ jobs:
       - uses: ./.github/actions/build-setup
 
       - name: Run move-vm-backend tests
-        run: cargo test -p move-vm-backend --features build-move-projects-for-test
+        run: cargo test -p move-vm-backend

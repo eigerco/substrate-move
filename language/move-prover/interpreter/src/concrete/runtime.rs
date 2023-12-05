@@ -144,7 +144,8 @@ fn check_and_convert_type_args_and_args(
                         converted_args.push(TypedValue::mk_signer(*v));
                     }
                     _ => {
-                        return Err(PartialVMError::new(StatusCode::TYPE_MISMATCH));
+                        return Err(PartialVMError::new(StatusCode::TYPE_MISMATCH)
+                            .with_message("expected adderss, got signer".to_string()));
                     }
                 }
             }
@@ -254,7 +255,8 @@ pub fn convert_move_value(val: &MoveValue, ty: &BaseType) -> PartialVMResult<Typ
         (MoveValue::Struct(v), BaseType::Struct(inst)) => {
             let fields = v.fields();
             if fields.len() != inst.fields.len() {
-                return Err(PartialVMError::new(StatusCode::TYPE_MISMATCH));
+                return Err(PartialVMError::new(StatusCode::TYPE_MISMATCH)
+                    .with_message("fields lengs not match for a struct".to_string()));
             }
             let converted = fields
                 .iter()
@@ -264,7 +266,8 @@ pub fn convert_move_value(val: &MoveValue, ty: &BaseType) -> PartialVMResult<Typ
             TypedValue::mk_struct(inst.clone(), converted)
         }
         _ => {
-            return Err(PartialVMError::new(StatusCode::TYPE_MISMATCH));
+            return Err(PartialVMError::new(StatusCode::TYPE_MISMATCH)
+                .with_message("Unsupported type for convert_move_value method".to_string()));
         }
     };
     Ok(converted)
