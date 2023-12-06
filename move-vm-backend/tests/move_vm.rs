@@ -403,14 +403,13 @@ fn deposit_module_and_substrate_api_test() {
         SIGNER_MODULE_BYTES.as_slice(),
         root,
         &mut UnmeteredGasMeter {},
-    )
-    .unwrap();
+    );
     vm.publish_module(
         MOVE_DEPOSIT_MODULE_BYTES.as_slice(),
         root,
         &mut UnmeteredGasMeter {},
-    )
-    .unwrap();
+    );
+
     vm.execute_script(
         DEPOSIT_SCRIPT_BYTES.as_slice(),
         vec![],
@@ -420,8 +419,7 @@ fn deposit_module_and_substrate_api_test() {
             &bcs::to_bytes(&123u128).unwrap(),
         ],
         &mut UnmeteredGasMeter {},
-    )
-    .unwrap();
+    );
     // Verify stuff was not actually stored
     // assert!(!vm
     //     .get_resource(&destination, &bcs::to_bytes(&*DEPOSIT_TEMPLATE).unwrap())
@@ -442,14 +440,12 @@ fn check_balance_of_script_test() {
         SIGNER_MODULE_BYTES.as_slice(),
         root,
         &mut UnmeteredGasMeter {},
-    )
-    .unwrap();
+    );
     vm.publish_module(
         MOVE_DEPOSIT_MODULE_BYTES.as_slice(),
         root,
         &mut UnmeteredGasMeter {},
-    )
-    .unwrap();
+    );
     // script asserts internally
     vm.execute_script(
         CHECK_BALANCE_OF_SCRIPT_BYTES.as_slice(),
@@ -459,6 +455,5 @@ fn check_balance_of_script_test() {
             &bcs::to_bytes(&123u128).unwrap(),
         ],
         &mut UnmeteredGasMeter {},
-    )
-    .unwrap();
+    );
 }
