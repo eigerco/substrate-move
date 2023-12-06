@@ -150,7 +150,7 @@ where
         let result = sess.publish_module(module.to_vec(), address, gas);
 
         self.handle_result(
-            result.and_then(|_| sess.finish().map(|(ws, e)| (ws, e))),
+            result.and_then(|_| sess.finish()),
             gas,
         )
     }
@@ -180,7 +180,7 @@ where
         let result = sess.publish_module_bundle(modules, address, gas);
 
         self.handle_result(
-            result.and_then(|_| sess.finish().map(|(ws, e)| (ws, e))),
+            result.and_then(|_| sess.finish()),
             gas,
         )
     }
@@ -254,7 +254,7 @@ where
         }
 
         self.handle_result(
-            result.and_then(|_| sess.finish().map(|(ws, e)| (ws, e))),
+            result.and_then(|_| sess.finish()),
             gas,
         )
     }
