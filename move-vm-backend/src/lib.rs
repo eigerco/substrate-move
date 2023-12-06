@@ -5,19 +5,25 @@ extern crate alloc;
 mod abi;
 pub mod deposit;
 pub mod storage;
+pub mod types;
 mod warehouse;
+
 use crate::storage::Storage;
+use crate::types::VmResult;
 use crate::warehouse::Warehouse;
 use abi::ModuleAbi;
 use alloc::{format, vec::Vec};
 use anyhow::{anyhow, Error};
 use core::fmt::Display;
+use move_binary_format::errors::VMResult;
 use move_binary_format::file_format::StructHandleIndex;
 /// re-export for param verification
 pub use move_binary_format::file_format::{CompiledScript, SignatureToken};
 use move_binary_format::CompiledModule;
 use move_core_types::account_address::AccountAddress;
+use move_core_types::effects::{ChangeSet, Event};
 use move_core_types::identifier::Identifier;
+use move_core_types::vm_status::StatusCode;
 use move_core_types::{
     language_storage::{ModuleId, TypeTag, CORE_CODE_ADDRESS},
     resolver::{ModuleResolver, ResourceResolver},
@@ -177,21 +183,12 @@ where
         module: &[u8],
         address: AccountAddress,
         gas: &mut impl GasMeter,
-    ) -> Result<(), Error> {
+    ) -> VmResult {
         let mut sess = self.vm.new_session(&self.warehouse);
 
-        sess.publish_module(module.to_vec(), address, gas)
-            .map_err(|err| {
-                let (code, _, msg, _, _, _, _) = err.all_data();
-                anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
-            })?;
+        let result = sess.publish_module(module.to_vec(), address, gas);
 
-        let (changeset, _) = sess.finish().map_err(|err| {
-            let (code, _, msg, _, _, _, _) = err.all_data();
-            anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
-        })?;
-
-        self.warehouse.apply_changes(changeset)
+        self.handle_result(result.and_then(|_| sess.finish()), gas)
     }
 
     /// Publish a package of modules into the storage under the given address.
@@ -200,22 +197,25 @@ where
         package: &[u8],
         address: AccountAddress,
         gas: &mut impl GasMeter,
-    ) -> Result<(), Error> {
-        let modules = ModuleBundle::try_from(package)?.into_inner();
+    ) -> VmResult {
+        let modules = ModuleBundle::try_from(package).map_err(|e| {
+            VmResult::new(
+                StatusCode::UNKNOWN_MODULE,
+                Some(e.to_string()),
+                gas.balance_internal().into(),
+            )
+        });
+
+        let modules = match modules {
+            Ok(modules) => modules.into_inner(),
+            Err(e) => return e,
+        };
+
         let mut sess = self.vm.new_session(&self.warehouse);
 
-        sess.publish_module_bundle(modules, address, gas)
-            .map_err(|err| {
-                let (code, _, msg, _, _, _, _) = err.all_data();
-                anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
-            })?;
+        let result = sess.publish_module_bundle(modules, address, gas);
 
-        let (changeset, _) = sess.finish().map_err(|err| {
-            let (code, _, msg, _, _, _, _) = err.all_data();
-            anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
-        })?;
-
-        self.warehouse.apply_changes(changeset)
+        self.handle_result(result.and_then(|_| sess.finish()), gas)
     }
 
     /// Execute script using the given arguments (args).
@@ -225,7 +225,7 @@ where
         type_args: Vec<TypeTag>,
         args: Vec<&[u8]>,
         gas: &mut impl GasMeter,
-    ) -> Result<(), Error> {
+    ) -> VmResult {
         self.execute_script_worker(
             Transaction {
                 call: Call::Script {
@@ -247,7 +247,7 @@ where
         type_args: Vec<TypeTag>,
         args: Vec<&[u8]>,
         gas: &mut impl GasMeter,
-    ) -> Result<(), Error> {
+    ) -> VmResult {
         self.execute_script_worker(
             Transaction {
                 call: Call::ScriptFunction {
@@ -263,46 +263,54 @@ where
     }
 
     /// Execute script using the given arguments (args).
-    fn execute_script_worker(
-        &self,
-        transaction: Transaction,
-        gas: &mut impl GasMeter,
-    ) -> Result<(), Error> {
+    fn execute_script_worker(&self, transaction: Transaction, gas: &mut impl GasMeter) -> VmResult {
         let mut sess = self.vm.new_session(&self.warehouse);
+        let result;
 
         match transaction.call {
             Call::Script { code } => {
-                sess.execute_script(code, transaction.type_args, transaction.args, gas)
-                    .map_err(|err| {
-                        let (code, _, msg, _, _, _, _) = err.all_data();
-                        anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
-                    })?;
+                result = sess.execute_script(code, transaction.type_args, transaction.args, gas);
             }
             Call::ScriptFunction {
                 mod_address,
                 mod_name,
                 func_name,
             } => {
-                sess.execute_entry_function(
+                result = sess.execute_entry_function(
                     &ModuleId::new(mod_address, mod_name),
                     &func_name,
                     transaction.type_args,
                     transaction.args,
                     gas,
-                )
-                .map_err(|err| {
-                    let (code, _, msg, _, _, _, _) = err.all_data();
-                    anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
-                })?;
+                );
             }
         }
 
-        let (changeset, _) = sess.finish().map_err(|err| {
-            let (code, _, msg, _, _, _, _) = err.all_data();
-            anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
-        })?;
+        self.handle_result(result.and_then(|_| sess.finish()), gas)
+    }
 
-        self.warehouse.apply_changes(changeset)
+    fn handle_result(
+        &self,
+        result: VMResult<(ChangeSet, Vec<Event>)>,
+        gas: &mut impl GasMeter,
+    ) -> VmResult {
+        match result {
+            Ok((changeset, _)) => {
+                let mut result =
+                    VmResult::new(StatusCode::EXECUTED, None, gas.balance_internal().into());
+
+                if let Err(e) = self.warehouse.apply_changes(changeset) {
+                    result.status_code = StatusCode::STORAGE_ERROR;
+                    result.error_message = Some(format!("Storage error: {}", e));
+                }
+
+                result
+            }
+            Err(err) => {
+                let (status_code, _, msg, _, _, _, _) = err.all_data();
+                VmResult::new(status_code, msg.clone(), gas.balance_internal().into())
+            }
+        }
     }
 
     pub fn get_struct_members(&self, idx: StructHandleIndex) -> Vec<SignatureToken> {
