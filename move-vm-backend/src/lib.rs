@@ -149,10 +149,7 @@ where
 
         let result = sess.publish_module(module.to_vec(), address, gas);
 
-        self.handle_result(
-            result.and_then(|_| sess.finish()),
-            gas,
-        )
+        self.handle_result(result.and_then(|_| sess.finish()), gas)
     }
 
     /// Publish a package of modules into the storage under the given address.
@@ -179,10 +176,7 @@ where
 
         let result = sess.publish_module_bundle(modules, address, gas);
 
-        self.handle_result(
-            result.and_then(|_| sess.finish()),
-            gas,
-        )
+        self.handle_result(result.and_then(|_| sess.finish()), gas)
     }
 
     /// Execute script using the given arguments (args).
@@ -253,10 +247,7 @@ where
             }
         }
 
-        self.handle_result(
-            result.and_then(|_| sess.finish()),
-            gas,
-        )
+        self.handle_result(result.and_then(|_| sess.finish()), gas)
     }
 
     fn handle_result(
