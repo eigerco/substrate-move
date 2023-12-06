@@ -4,6 +4,7 @@ use crate::{
     SubstrateAPI,
 };
 use alloc::{
+    borrow::ToOwned,
     collections::{
         btree_map::Entry::{Occupied, Vacant},
         BTreeMap,

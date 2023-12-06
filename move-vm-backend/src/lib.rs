@@ -12,21 +12,22 @@ use crate::storage::Storage;
 use crate::types::VmResult;
 use crate::warehouse::Warehouse;
 use abi::ModuleAbi;
-use alloc::{format, vec::Vec};
+use alloc::{format, vec, vec::Vec};
 use anyhow::{anyhow, Error};
 use core::fmt::Display;
-use move_binary_format::errors::VMResult;
-use move_binary_format::file_format::StructHandleIndex;
-/// re-export for param verification
-pub use move_binary_format::file_format::{CompiledScript, SignatureToken};
-use move_binary_format::CompiledModule;
-use move_core_types::account_address::AccountAddress;
-use move_core_types::effects::{ChangeSet, Event};
-use move_core_types::identifier::Identifier;
-use move_core_types::vm_status::StatusCode;
+use move_binary_format::{
+    errors::VMResult,
+    file_format::StructHandleIndex,
+    // re-export for param verification
+    file_format::{CompiledModule, SignatureToken},
+};
 use move_core_types::{
+    account_address::AccountAddress,
+    effects::{ChangeSet, Event},
+    identifier::Identifier,
     language_storage::{ModuleId, TypeTag, CORE_CODE_ADDRESS},
     resolver::{ModuleResolver, ResourceResolver},
+    vm_status::StatusCode,
 };
 use move_stdlib::natives::{all_natives, GasParameters};
 use move_vm_backend_common::types::ModuleBundle;
