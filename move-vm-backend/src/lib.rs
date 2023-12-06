@@ -48,6 +48,7 @@ impl Display for TransferError {
     }
 }
 
+/*
 pub trait SubstrateAPI {
     /// Callback signature of method to do the transfer between accounts
     /// # Params
@@ -68,35 +69,36 @@ pub trait SubstrateAPI {
     /// # Returns 'u128' value of account's balance.
     fn get_balance(&self, of: AccountAddress) -> u128;
 }
+*/
 
 /// Main MoveVM structure, which is used to represent the virutal machine itself.
-pub struct Mvm<S, Api>
+pub struct Mvm<S> //, Api>
 where
     S: Storage,
-    Api: SubstrateAPI,
+//    Api: SubstrateAPI,
 {
     // MoveVM instance - from move_vm_runtime crate
     vm: MoveVM,
     // Storage instance
-    warehouse: Warehouse<S, Api>,
+    warehouse: Warehouse<S>, //, Api>,
 }
 
-impl<S, Api> Mvm<S, Api>
+impl<S> Mvm<S> //, Api>
 where
     S: Storage,
-    Api: SubstrateAPI,
+//    Api: SubstrateAPI,
 {
     /// Create a new Move VM with the given storage.
-    pub fn new(storage: S, substrate_api: Api) -> Result<Mvm<S, Api>, Error> {
-        Self::new_with_config(storage, substrate_api)
+    pub fn new(storage: S/*, substrate_api: Api*/) -> Result<Mvm<S/*, Api*/>, Error> {
+        Self::new_with_config(storage/*, substrate_api*/)
     }
 
     /// Create a new Move VM with the given storage and configuration.
     pub(crate) fn new_with_config(
         storage: S,
-        substrate_api: Api,
+//        substrate_api: Api,
         // config: VMConfig,
-    ) -> Result<Mvm<S, Api>, Error> {
+    ) -> Result<Mvm<S> /*, Api>*/, Error> {
         Ok(Mvm {
             vm: MoveVM::new(all_natives(CORE_CODE_ADDRESS, GasParameters::zeros())).map_err(
                 |err| {
@@ -104,7 +106,7 @@ where
                     anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
                 },
             )?,
-            warehouse: Warehouse::new(storage, substrate_api),
+            warehouse: Warehouse::new(storage /*, substrate_api*/),
         })
     }
 
