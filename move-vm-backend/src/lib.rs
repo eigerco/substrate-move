@@ -9,7 +9,7 @@ pub mod types;
 mod warehouse;
 
 use crate::storage::Storage;
-use crate::types::{Call,Transaction, VmResult};
+use crate::types::{Call, Transaction, VmResult};
 use crate::warehouse::Warehouse;
 use abi::ModuleAbi;
 use alloc::{format, vec, vec::Vec};
