@@ -1,6 +1,6 @@
 use move_core_types::account_address::AccountAddress;
 use move_vm_backend::storage::Storage;
-use move_vm_backend::{SubstrateAPI, TransferError};
+//use move_vm_backend::{SubstrateAPI, TransferError};
 use std::cell::RefCell;
 use std::collections::HashMap;
 
@@ -41,9 +41,11 @@ impl Storage for StorageMock {
     }
 }
 
+/*
 pub struct SubstrateApiMock {
     pub storage: StorageMock,
 }
+
 
 impl SubstrateAPI for SubstrateApiMock {
     fn transfer(
@@ -65,3 +67,4 @@ impl SubstrateAPI for SubstrateApiMock {
         }
     }
 }
+*/
