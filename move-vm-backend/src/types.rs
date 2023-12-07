@@ -34,7 +34,6 @@ pub struct Transaction {
     pub args: Vec<Vec<u8>>,
 }
 
-
 /// Result of the execution.
 #[derive(Debug)]
 pub struct VmResult {
