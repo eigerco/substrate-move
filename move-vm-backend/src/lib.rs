@@ -9,7 +9,7 @@ pub mod types;
 mod warehouse;
 
 use crate::storage::Storage;
-use crate::types::VmResult;
+use crate::types::{Call,Transaction, VmResult};
 use crate::warehouse::Warehouse;
 use abi::ModuleAbi;
 use alloc::{format, vec, vec::Vec};
@@ -35,7 +35,7 @@ use move_vm_runtime::move_vm::MoveVM;
 use move_vm_types::gas::GasMeter;
 use move_vm_types::loaded_data::runtime_types::{CachedStructIndex, Type};
 
-/// Represents failures that might occure during native token transaction
+/// Represents failures that might occur during native token transaction
 #[derive(Debug)]
 pub enum TransferError {
     InsuficientBalance,
@@ -79,36 +79,6 @@ where
     vm: MoveVM,
     // Storage instance
     warehouse: Warehouse<S, Api>,
-}
-
-/// Call type used to determine if we are calling script or function inside some module.
-#[derive(Debug)]
-enum Call {
-    /// Script
-    Script {
-        /// Script bytecode.
-        code: Vec<u8>,
-    },
-    /// Function in module with script viability.
-    ScriptFunction {
-        /// Module address.
-        mod_address: AccountAddress,
-        /// Module name.
-        mod_name: Identifier,
-        /// Function name - must be public and marked as `entry` in the module.
-        func_name: Identifier,
-    },
-}
-
-/// Transaction struct used in execute_script call.
-#[derive(Debug)]
-struct Transaction {
-    /// Call type.
-    pub call: Call,
-    /// Type arguments.
-    pub type_args: Vec<TypeTag>,
-    /// Arguments of the call.
-    pub args: Vec<Vec<u8>>,
 }
 
 impl<S, Api> Mvm<S, Api>

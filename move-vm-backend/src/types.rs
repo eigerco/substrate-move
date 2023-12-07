@@ -1,4 +1,39 @@
+use alloc::vec::Vec;
+use move_core_types::account_address::AccountAddress;
+use move_core_types::identifier::Identifier;
+use move_core_types::language_storage::TypeTag;
 use move_core_types::vm_status::StatusCode;
+
+/// Call type used to determine if we are calling script or function inside some module.
+#[derive(Debug)]
+pub enum Call {
+    /// Script
+    Script {
+        /// Script bytecode.
+        code: Vec<u8>,
+    },
+    /// Function in module with script viability.
+    ScriptFunction {
+        /// Module address.
+        mod_address: AccountAddress,
+        /// Module name.
+        mod_name: Identifier,
+        /// Function name - must be public and marked as `entry` in the module.
+        func_name: Identifier,
+    },
+}
+
+/// Transaction struct used in execute_script call.
+#[derive(Debug)]
+pub struct Transaction {
+    /// Call type.
+    pub call: Call,
+    /// Type arguments.
+    pub type_args: Vec<TypeTag>,
+    /// Arguments of the call.
+    pub args: Vec<Vec<u8>>,
+}
+
 
 /// Result of the execution.
 #[derive(Debug)]
