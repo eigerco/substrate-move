@@ -72,10 +72,11 @@ pub trait SubstrateAPI {
 */
 
 /// Main MoveVM structure, which is used to represent the virutal machine itself.
-pub struct Mvm<S> //, Api>
+pub struct Mvm<S>
+//, Api>
 where
     S: Storage,
-//    Api: SubstrateAPI,
+    //    Api: SubstrateAPI,
 {
     // MoveVM instance - from move_vm_runtime crate
     vm: MoveVM,
@@ -83,20 +84,21 @@ where
     warehouse: Warehouse<S>, //, Api>,
 }
 
-impl<S> Mvm<S> //, Api>
+impl<S> Mvm<S>
+//, Api>
 where
     S: Storage,
-//    Api: SubstrateAPI,
+    //    Api: SubstrateAPI,
 {
     /// Create a new Move VM with the given storage.
-    pub fn new(storage: S/*, substrate_api: Api*/) -> Result<Mvm<S/*, Api*/>, Error> {
-        Self::new_with_config(storage/*, substrate_api*/)
+    pub fn new(storage: S /*, substrate_api: Api*/) -> Result<Mvm<S /*, Api*/>, Error> {
+        Self::new_with_config(storage /*, substrate_api*/)
     }
 
     /// Create a new Move VM with the given storage and configuration.
     pub(crate) fn new_with_config(
         storage: S,
-//        substrate_api: Api,
+        //        substrate_api: Api,
         // config: VMConfig,
     ) -> Result<Mvm<S> /*, Api>*/, Error> {
         Ok(Mvm {

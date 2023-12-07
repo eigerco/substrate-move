@@ -1,7 +1,7 @@
 use crate::{
     deposit::{Deposit, DEPOSIT_TEMPLATE},
     storage::Storage,
-//    SubstrateAPI,
+    //    SubstrateAPI,
 };
 use alloc::{
     borrow::ToOwned,
@@ -74,17 +74,17 @@ impl AccountData {
 }
 
 /// Move VM storage implementation for Substrate storage.
-pub(crate) struct Warehouse<S: Storage/*, Api: SubstrateAPI*/> {
+pub(crate) struct Warehouse<S: Storage /*, Api: SubstrateAPI*/> {
     /// Substrate storage implementing the Storage trait
     storage: S,
-//    substrate_api: Api,
+    //    substrate_api: Api,
 }
 
-impl<S: Storage/*, Api: SubstrateAPI*/> Warehouse<S/*, Api*/> {
-    pub(crate) fn new(storage: S/*, substrate_api: Api*/) -> Warehouse<S/*, Api*/> {
+impl<S: Storage /*, Api: SubstrateAPI*/> Warehouse<S /*, Api*/> {
+    pub(crate) fn new(storage: S /*, substrate_api: Api*/) -> Warehouse<S /*, Api*/> {
         Self {
             storage,
-//            substrate_api,
+            //            substrate_api,
         }
     }
 
@@ -107,8 +107,8 @@ impl<S: Storage/*, Api: SubstrateAPI*/> Warehouse<S/*, Api*/> {
                             let (destination, amount) = deposit.into();
                             // make actual transaction using SubstrateApi
                             /*self.substrate_api
-                                .transfer(account, destination, amount)
-                                .map_err(|e| Error::msg(e.to_string()))?;*/
+                            .transfer(account, destination, amount)
+                            .map_err(|e| Error::msg(e.to_string()))?;*/
                         } else {
                             unprocessed_resources.push((tag, res));
                         }
@@ -128,7 +128,7 @@ impl<S: Storage/*, Api: SubstrateAPI*/> Warehouse<S/*, Api*/> {
     }
 }
 
-impl<S: Storage/*, Api: SubstrateAPI*/> Deref for Warehouse<S/*, Api*/> {
+impl<S: Storage /*, Api: SubstrateAPI*/> Deref for Warehouse<S /*, Api*/> {
     type Target = S;
 
     fn deref(&self) -> &Self::Target {
@@ -136,7 +136,7 @@ impl<S: Storage/*, Api: SubstrateAPI*/> Deref for Warehouse<S/*, Api*/> {
     }
 }
 
-impl<S: Storage/*, Api: SubstrateAPI*/> ModuleResolver for Warehouse<S/*, Api*/> {
+impl<S: Storage /*, Api: SubstrateAPI*/> ModuleResolver for Warehouse<S /*, Api*/> {
     type Error = Error;
 
     fn get_module(&self, module_id: &ModuleId) -> Result<Option<Vec<u8>>, Self::Error> {
@@ -154,7 +154,7 @@ impl<S: Storage/*, Api: SubstrateAPI*/> ModuleResolver for Warehouse<S/*, Api*/>
     }
 }
 
-impl<S: Storage/*, Api: SubstrateAPI*/> ResourceResolver for Warehouse<S/*, Api*/> {
+impl<S: Storage /*, Api: SubstrateAPI*/> ResourceResolver for Warehouse<S /*, Api*/> {
     type Error = Error;
 
     fn get_resource(
