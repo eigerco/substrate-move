@@ -12,7 +12,7 @@ use crate::storage::Storage;
 use crate::types::{Call, Transaction, VmResult};
 use crate::warehouse::Warehouse;
 use abi::ModuleAbi;
-use alloc::{format, vec, vec::Vec};
+use alloc::{format, string::ToString, vec, vec::Vec};
 use anyhow::{anyhow, Error};
 use core::fmt::Display;
 use move_binary_format::{
