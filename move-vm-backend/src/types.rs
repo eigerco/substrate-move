@@ -1,3 +1,4 @@
+use alloc::string::String;
 use alloc::vec::Vec;
 use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
