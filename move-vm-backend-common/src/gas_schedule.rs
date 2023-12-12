@@ -5,6 +5,7 @@
 //! This module lays out the basic abstract costing schedule for bytecode instructions and for the
 //! native functions.
 
+use alloc::vec;
 use lazy_static::lazy_static;
 use move_binary_format::{
     file_format::{
