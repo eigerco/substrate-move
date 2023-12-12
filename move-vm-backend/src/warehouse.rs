@@ -9,7 +9,6 @@ use alloc::{
         btree_map::Entry::{Occupied, Vacant},
         BTreeMap,
     },
-    string::ToString,
     vec,
     vec::Vec,
 };
@@ -104,7 +103,7 @@ impl<S: Storage /*, Api: SubstrateAPI*/> Warehouse<S /*, Api*/> {
                 match res {
                     New(ref data) | Modify(ref data) => {
                         if let Ok(deposit) = bcs::from_bytes::<Deposit>(data) {
-                            let (destination, amount) = deposit.into();
+                            let (_destination, _amount) = deposit.into();
                             // make actual transaction using SubstrateApi
                             /*self.substrate_api
                             .transfer(account, destination, amount)
