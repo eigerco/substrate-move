@@ -2,6 +2,12 @@
 // Copyright (c) The Move Contributors
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::alloc::borrow::ToOwned;
+use alloc::vec::Vec;
+use alloc::{
+    collections::{btree_map, BTreeMap},
+    fmt::Debug,
+};
 use anyhow::{bail, Result};
 use move_core_types::{
     account_address::AccountAddress,
@@ -9,10 +15,6 @@ use move_core_types::{
     identifier::Identifier,
     language_storage::{ModuleId, StructTag},
     resolver::{ModuleResolver, MoveResolver, ResourceResolver},
-};
-use std::{
-    collections::{btree_map, BTreeMap},
-    fmt::Debug,
 };
 
 #[cfg(feature = "table-extension")]

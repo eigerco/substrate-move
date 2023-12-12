@@ -16,7 +16,7 @@ move-core-types = { path = "../language/move-core/types", default-features = fal
 move-stdlib = { path = "../language/move-stdlib", default-features = false, features = ["address32", "stdlib-bytecode"] }
 move-vm-backend-common = { path = "../move-vm-backend-common", default-features = false, features = ["gas_schedule"] }
 move-vm-runtime = { path = "../language/move-vm/runtime", default-features = false }
-move-vm-test-utils = { path = "../language//move-vm/test-utils", default-features = false }
+move-vm-test-utils = { path = "../language/move-vm/test-utils", default-features = false }
 move-vm-types = { path = "../language/move-vm/types", default-features = false }
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 

@@ -8,19 +8,23 @@ homepage = "https://diem.com"
 license = "Apache-2.0"
 publish = false
 edition = "2021"
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.52"
-once_cell = "1.7.2"
-serde = { version = "1.0.124", features = ["derive", "rc"] }
+anyhow = { version = "1.0", default-features = false }
+lazy_static = { version = "1.4", default-features = false, features = ["spin_no_std"] }
 
-move-binary-format = { path = "../../move-binary-format" }
-move-core-types = {path = "../../move-core/types" }
-move-vm-types = { path = "../types" }
+move-binary-format = { path = "../../move-binary-format", default-features = false }
+move-core-types = { path = "../../move-core/types", default-features = false }
 move-table-extension = { path = "../../extensions/move-table-extension", optional = true }
+move-vm-types = { path = "../types", default-features = false }
+serde = { version = "1.0", default-features = false, features = ["derive", "rc"] }
 
 [features]
-default = [ ]
-table-extension = [ "move-table-extension" ]
+default = ["std"]
+table-extension = ["move-table-extension"]
+std = [
+    "move-binary-format/std",
+    "move-core-types/std",
+    "move-vm-types/std",
+]

@@ -7,6 +7,10 @@
 //! It is important to note that the cost schedule defined in this file does not track hashing
 //! operations or other native operations; the cost of each native operation will be returned by the
 //! native function itself.
+use alloc::vec;
+use alloc::vec::Vec;
+use core::ops::{Add, Mul};
+use lazy_static::lazy_static;
 use move_binary_format::{
     errors::{PartialVMError, PartialVMResult},
     file_format::{
@@ -29,12 +33,7 @@ use move_vm_types::{
     gas::{GasMeter, SimpleInstruction},
     views::{TypeView, ValueView},
 };
-use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
-use std::{
-    ops::{Add, Mul},
-    u64,
-};
 
 pub enum GasUnit {}
 
@@ -101,7 +100,9 @@ impl GasCost {
     }
 }
 
-static ZERO_COST_SCHEDULE: Lazy<CostTable> = Lazy::new(zero_cost_schedule);
+lazy_static! {
+    static ref ZERO_COST_SCHEDULE: CostTable = zero_cost_schedule();
+}
 
 /// The Move VM implementation of state for gas metering.
 ///
@@ -184,7 +185,7 @@ impl<'a> GasStatus<'a> {
         size: AbstractMemorySize,
     ) -> PartialVMResult<()> {
         // Make sure that the size is always non-zero
-        let size = std::cmp::max(1.into(), size);
+        let size = core::cmp::max(1.into(), size);
         debug_assert!(size > 0.into());
         self.deduct_gas(
             InternalGasPerAbstractMemoryUnit::new(
@@ -831,10 +832,12 @@ pub fn bytecode_instruction_costs() -> Vec<(Bytecode, GasCost)> {
     ]
 }
 
-pub static INITIAL_COST_SCHEDULE: Lazy<CostTable> = Lazy::new(|| {
-    let mut instrs = bytecode_instruction_costs();
-    // Note that the DiemVM is expecting the table sorted by instruction order.
-    instrs.sort_by_key(|cost| instruction_key(&cost.0));
+lazy_static! {
+    pub static ref INITIAL_COST_SCHEDULE: CostTable = {
+        let mut instrs = bytecode_instruction_costs();
+        // Note that the DiemVM is expecting the table sorted by instruction order.
+        instrs.sort_by_key(|cost| instruction_key(&cost.0));
 
-    new_from_instructions(instrs)
-});
+        new_from_instructions(instrs)
+    };
+}

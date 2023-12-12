@@ -399,5 +399,8 @@ fn execute_function_test_without_enough_gas() {
     let params: Vec<&[u8]> = vec![&addr_param];
     let result = vm.execute_function(address, mod_name, func_name, type_args, params, gas);
 
-    assert!(result.is_err(), "script execution succeeded with small amount of gas");
+    assert!(
+        result.is_err(),
+        "script execution succeeded with small amount of gas"
+    );
 }
