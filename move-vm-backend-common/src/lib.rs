@@ -3,3 +3,6 @@
 extern crate alloc;
 
 pub mod types;
+
+#[cfg(feature = "gas_schedule")]
+pub mod gas_schedule;
