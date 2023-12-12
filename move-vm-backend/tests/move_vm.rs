@@ -2,19 +2,11 @@ use crate::mock::StorageMock;
 use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::StructTag;
-use move_vm_backend::{
-    deposit::CHECK_BALANCE_OF_SCRIPT_BYTES, Mvm, /*SubstrateAPI,*/ TransferError,
-};
+use move_vm_backend::Mvm;
 use move_vm_backend_common::types::ModuleBundle;
 
 use move_core_types::language_storage::TypeTag;
-use move_core_types::value::MoveValue::Signer;
-use move_vm_backend::deposit::{
-    DEPOSIT_SCRIPT_BYTES, MOVE_DEPOSIT_MODULE_BYTES, SIGNER_MODULE_BYTES,
-};
-
-use move_vm_test_utils::gas_schedule::GasStatus;
-use move_vm_types::gas::UnmeteredGasMeter;
+use move_vm_backend::types::GasStrategy;
 
 pub mod mock;
 
@@ -82,9 +74,9 @@ fn publish_module_test() {
     let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let module = read_module_bytes_from_project("empty", "Empty");
 
-    let mut gas_status = GasStatus::new_unmetered();
+    let gas = GasStrategy::Unmetered;
 
-    let result = vm.publish_module(&module, address, &mut gas_status);
+    let result = vm.publish_module(&module, address, gas);
 
     assert!(result.is_ok(), "failed to publish the module");
 }
@@ -94,7 +86,7 @@ fn publish_module_test() {
 fn publish_module_package_from_multiple_module_files() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
-    let mut gas_status = GasStatus::new_unmetered();
+    let gas = GasStrategy::Unmetered;
 
     let module_1 = read_module_bytes_from_project("using_stdlib_natives", "Vector");
     let module_2 = read_module_bytes_from_project("using_stdlib_natives", "DependsOnVector");
@@ -104,7 +96,7 @@ fn publish_module_package_from_multiple_module_files() {
     let modules = ModuleBundle::new(vec![module_1.clone(), module_2.clone()])
         .encode()
         .unwrap();
-    let result = vm.publish_module_package(&modules, addr, &mut gas_status);
+    let result = vm.publish_module_package(&modules, addr, gas);
     assert!(result.is_ok(), "failed to publish the package");
 
     // Recreate the storage and the MoveVM
@@ -114,7 +106,7 @@ fn publish_module_package_from_multiple_module_files() {
     let modules = ModuleBundle::new(vec![module_2, module_1])
         .encode()
         .unwrap();
-    let result = vm.publish_module_package(&modules, addr, &mut gas_status);
+    let result = vm.publish_module_package(&modules, addr, gas);
     assert!(
         result.is_err(),
         "publishing a package with a wrong order succeeded"
@@ -126,12 +118,12 @@ fn publish_module_package_from_multiple_module_files() {
 fn publish_module_package_from_bundle_file() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
-    let mut gas_status = GasStatus::new_unmetered();
+    let gas = GasStrategy::Unmetered;
 
     let bundle = read_bundle_from_project("using_stdlib_natives", "using_stdlib_natives");
     let addr = AccountAddress::from_hex_literal("0x2").unwrap();
 
-    let result = vm.publish_module_package(&bundle, addr, &mut gas_status);
+    let result = vm.publish_module_package(&bundle, addr, gas);
     assert!(result.is_ok(), "failed to publish the package");
 }
 
@@ -141,17 +133,13 @@ fn publish_module_package_from_bundle_file() {
 fn publish_module_dependent_on_stdlib_natives() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
-    let mut gas_status = GasStatus::new_unmetered();
+    let gas = GasStrategy::Unmetered;
 
     let mod_using_stdlib_natives = read_module_bytes_from_project("using_stdlib_natives", "Vector");
     let addr_StdNativesUser = AccountAddress::from_hex_literal("0x2").unwrap();
 
     // Natives are part of the MoveVM so no need to publish compiled stdlib bytecode modules.
-    let result = vm.publish_module(
-        &mod_using_stdlib_natives,
-        addr_StdNativesUser,
-        &mut gas_status,
-    );
+    let result = vm.publish_module(&mod_using_stdlib_natives, addr_StdNativesUser, gas);
     assert!(result.is_ok(), "the first module cannot be published");
 
     let mod_depends_on_using_stdlib_natives =
@@ -161,7 +149,7 @@ fn publish_module_dependent_on_stdlib_natives() {
     let result = vm.publish_module(
         &mod_depends_on_using_stdlib_natives,
         addr_TestingNatives,
-        &mut gas_status,
+        gas,
     );
     assert!(result.is_ok(), "the second module cannot be published");
 }
@@ -172,7 +160,7 @@ fn publish_module_dependent_on_stdlib_natives() {
 fn publish_module_using_stdlib_full_fails() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
-    let mut gas_status = GasStatus::new_unmetered();
+    let gas = GasStrategy::Unmetered;
 
     let mod_using_stdlib_natives =
         read_module_bytes_from_project("using_stdlib_full", "StringAndVector");
@@ -180,11 +168,7 @@ fn publish_module_using_stdlib_full_fails() {
 
     // In order to publish a module which is using the full stdlib package, we first must publish
     // the stdlib package itself to the MoveVM.
-    let result = vm.publish_module(
-        &mod_using_stdlib_natives,
-        addr_StdNativesUser,
-        &mut gas_status,
-    );
+    let result = vm.publish_module(&mod_using_stdlib_natives, addr_StdNativesUser, gas);
     assert!(result.is_err(), "the module shouldn't be published");
 }
 
@@ -197,8 +181,8 @@ fn get_module_and_module_abi() {
     let module = read_module_bytes_from_project("using_stdlib_natives", "Vector");
     let address = AccountAddress::from_hex_literal("0x2").unwrap();
 
-    let mut gas_status = GasStatus::new_unmetered();
-    let result = vm.publish_module(&module, address, &mut gas_status);
+    let gas = GasStrategy::Unmetered;
+    let result = vm.publish_module(&module, address, gas);
     assert!(result.is_ok(), "failed to publish the module");
 
     let result = vm.get_module(address, "Vector");
@@ -217,17 +201,17 @@ fn get_module_and_module_abi() {
 fn get_resource() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
-    let mut gas_status = GasStatus::new_unmetered();
+    let gas = GasStrategy::Unmetered;
 
     let addr_std = AccountAddress::from_hex_literal("0x1").unwrap();
     let stdlib = move_stdlib::move_stdlib_bundle();
-    let result = vm.publish_module_package(&stdlib, addr_std, &mut gas_status);
+    let result = vm.publish_module_package(&stdlib, addr_std, gas);
 
     assert!(result.is_ok(), "Failed to publish the stdlib bundle");
 
     let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let module = read_module_bytes_from_project("basic_coin", "BasicCoin");
-    let result = vm.publish_module(&module, address, &mut gas_status);
+    let result = vm.publish_module(&module, address, gas);
 
     assert!(result.is_ok(), "Failed to publish the module");
 
@@ -235,7 +219,7 @@ fn get_resource() {
     let addr_param = bcs::to_bytes(&address).unwrap();
     let type_args: Vec<TypeTag> = vec![];
     let params: Vec<&[u8]> = vec![&addr_param];
-    let result = vm.execute_script(&script, type_args, params, &mut gas_status);
+    let result = vm.execute_script(&script, type_args, params, gas);
 
     assert!(result.is_ok(), "script execution failed");
 
@@ -276,12 +260,12 @@ fn execute_script_with_no_params_test() {
 
     let script = read_script_bytes_from_project("simple_scripts", "empty_loop");
 
-    let mut gas_status = GasStatus::new_unmetered();
+    let gas = GasStrategy::Unmetered;
 
     let type_args: Vec<TypeTag> = vec![];
     let params: Vec<&[u8]> = vec![];
 
-    let result = vm.execute_script(&script, type_args, params, &mut gas_status);
+    let result = vm.execute_script(&script, type_args, params, gas);
 
     assert!(result.is_ok(), "failed to execute the script");
 }
@@ -293,13 +277,13 @@ fn execute_script_params_test() {
 
     let script = read_script_bytes_from_project("simple_scripts", "empty_loop_param");
 
-    let mut gas_status = GasStatus::new_unmetered();
+    let gas = GasStrategy::Unmetered;
 
     let iter_count = bcs::to_bytes(&10u64).unwrap();
     let type_args: Vec<TypeTag> = vec![];
     let params: Vec<&[u8]> = vec![&iter_count];
 
-    let result = vm.execute_script(&script, type_args, params, &mut gas_status);
+    let result = vm.execute_script(&script, type_args, params, gas);
 
     assert!(result.is_ok(), "failed to execute the script");
 }
@@ -311,13 +295,13 @@ fn execute_script_generics_test() {
 
     let script = read_script_bytes_from_project("simple_scripts", "generic_1");
 
-    let mut gas_status = GasStatus::new_unmetered();
+    let gas = GasStrategy::Unmetered;
 
     let param = bcs::to_bytes(&100u64).unwrap();
     let type_args: Vec<TypeTag> = vec![TypeTag::U64];
     let params: Vec<&[u8]> = vec![&param];
 
-    let result = vm.execute_script(&script, type_args, params, &mut gas_status);
+    let result = vm.execute_script(&script, type_args, params, gas);
 
     assert!(result.is_ok(), "failed to execute the script");
 
@@ -326,7 +310,7 @@ fn execute_script_generics_test() {
     let type_args: Vec<TypeTag> = vec![TypeTag::Bool];
     let params: Vec<&[u8]> = vec![&param];
 
-    let result = vm.execute_script(&script, type_args, params, &mut gas_status);
+    let result = vm.execute_script(&script, type_args, params, gas);
 
     assert!(result.is_ok(), "failed to execute the script");
 }
@@ -338,14 +322,14 @@ fn execute_script_generics_incorrect_params_test() {
 
     let script = read_script_bytes_from_project("simple_scripts", "generic_1");
 
-    let mut gas_status = GasStatus::new_unmetered();
+    let gas = GasStrategy::Unmetered;
 
     // Execute with mismatched params
     let param = bcs::to_bytes(&true).unwrap();
     let type_args: Vec<TypeTag> = vec![TypeTag::U64];
     let params: Vec<&[u8]> = vec![&param];
 
-    let result = vm.execute_script(&script, type_args, params, &mut gas_status);
+    let result = vm.execute_script(&script, type_args, params, gas);
 
     assert!(result.is_err(), "script execution should fail");
 
@@ -354,7 +338,7 @@ fn execute_script_generics_incorrect_params_test() {
     let type_args: Vec<TypeTag> = vec![TypeTag::U64, TypeTag::Bool];
     let params: Vec<&[u8]> = vec![&param];
 
-    let result = vm.execute_script(&script, type_args, params, &mut gas_status);
+    let result = vm.execute_script(&script, type_args, params, gas);
 
     assert!(result.is_err(), "script execution should fail");
 }
@@ -363,17 +347,17 @@ fn execute_script_generics_incorrect_params_test() {
 fn execute_function_test() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
-    let mut gas_status = GasStatus::new_unmetered();
+    let gas = GasStrategy::Unmetered;
 
     let addr_std = AccountAddress::from_hex_literal("0x1").unwrap();
     let stdlib = move_stdlib::move_stdlib_bundle();
-    let result = vm.publish_module_package(&stdlib, addr_std, &mut gas_status);
+    let result = vm.publish_module_package(&stdlib, addr_std, gas);
 
     assert!(result.is_ok(), "Failed to publish the stdlib bundle");
 
     let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let module = read_module_bytes_from_project("basic_coin", "BasicCoin");
-    let result = vm.publish_module(&module, address, &mut gas_status);
+    let result = vm.publish_module(&module, address, gas);
 
     assert!(result.is_ok(), "Failed to publish the module");
 
@@ -383,83 +367,37 @@ fn execute_function_test() {
 
     let type_args: Vec<TypeTag> = vec![];
     let params: Vec<&[u8]> = vec![&addr_param];
-    let result = vm.execute_function(
-        address,
-        mod_name,
-        func_name,
-        type_args,
-        params,
-        &mut gas_status,
-    );
+    let result = vm.execute_function(address, mod_name, func_name, type_args, params, gas);
 
     assert!(result.is_ok(), "script execution failed");
 }
 
-/*
 #[test]
-fn deposit_module_and_substrate_api_test() {
-    let api = SubstrateApiMock {
-        storage: StorageMock::new(),
-    };
-    let vm = Mvm::new(StorageMock::new(), api).unwrap();
-    let root = AccountAddress::from_hex_literal("0x01").unwrap();
-    let destination = AccountAddress::from_hex_literal("0xCAFE").unwrap();
-    vm.publish_module(
-        SIGNER_MODULE_BYTES.as_slice(),
-        root,
-        &mut UnmeteredGasMeter {},
-    );
-    vm.publish_module(
-        MOVE_DEPOSIT_MODULE_BYTES.as_slice(),
-        root,
-        &mut UnmeteredGasMeter {},
-    );
+fn execute_function_test_without_enough_gas() {
+    let store = StorageMock::new();
+    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let gas = GasStrategy::Unmetered;
 
-    vm.execute_script(
-        DEPOSIT_SCRIPT_BYTES.as_slice(),
-        vec![],
-        vec![
-            &bcs::to_bytes(&Signer(root)).unwrap(),
-            &bcs::to_bytes(&destination).unwrap(),
-            &bcs::to_bytes(&123u128).unwrap(),
-        ],
-        &mut UnmeteredGasMeter {},
-    );
-    // Verify stuff was not actually stored
-    // assert!(!vm
-    //     .get_resource(&destination, &bcs::to_bytes(&*DEPOSIT_TEMPLATE).unwrap())
-    //     .unwrap()
-    //     .is_some());
-    // TODO: check balance chenged
-}
+    let addr_std = AccountAddress::from_hex_literal("0x1").unwrap();
+    let stdlib = move_stdlib::move_stdlib_bundle();
+    let result = vm.publish_module_package(&stdlib, addr_std, gas);
 
-#[test]
-fn check_balance_of_script_test() {
-    let api = SubstrateApiMock {
-        storage: StorageMock::new(),
-    };
-    let vm = Mvm::new(StorageMock::new(), api).unwrap();
-    let root = AccountAddress::from_hex_literal("0x01").unwrap();
-    let destination = AccountAddress::from_hex_literal("0xCAFE").unwrap();
-    vm.publish_module(
-        SIGNER_MODULE_BYTES.as_slice(),
-        root,
-        &mut UnmeteredGasMeter {},
-    );
-    vm.publish_module(
-        MOVE_DEPOSIT_MODULE_BYTES.as_slice(),
-        root,
-        &mut UnmeteredGasMeter {},
-    );
-    // script asserts internally
-    vm.execute_script(
-        CHECK_BALANCE_OF_SCRIPT_BYTES.as_slice(),
-        vec![],
-        vec![
-            &bcs::to_bytes(&destination).unwrap(),
-            &bcs::to_bytes(&123u128).unwrap(),
-        ],
-        &mut UnmeteredGasMeter {},
-    );
+    assert!(result.is_ok(), "Failed to publish the stdlib bundle");
+
+    let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
+    let module = read_module_bytes_from_project("basic_coin", "BasicCoin");
+    let result = vm.publish_module(&module, address, gas);
+
+    assert!(result.is_ok(), "Failed to publish the module");
+
+    let addr_param = bcs::to_bytes(&address).unwrap();
+    let mod_name = Identifier::new("BasicCoin").unwrap();
+    let func_name = Identifier::new("publish_balance").unwrap();
+
+    let gas = GasStrategy::Metered(1);
+    let type_args: Vec<TypeTag> = vec![];
+    let params: Vec<&[u8]> = vec![&addr_param];
+    let result = vm.execute_function(address, mod_name, func_name, type_args, params, gas);
+
+    assert!(result.is_err(), "script execution succeeded with small amount of gas");
 }
-*/

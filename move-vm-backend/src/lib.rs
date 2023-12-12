@@ -29,11 +29,16 @@ use move_core_types::{
     resolver::{ModuleResolver, ResourceResolver},
     vm_status::StatusCode,
 };
-use move_stdlib::natives::{all_natives, GasParameters};
-use move_vm_backend_common::types::ModuleBundle;
+use move_stdlib::natives::all_natives;
+use move_vm_backend_common::{
+    gas_schedule::{INSTRUCTION_COST_TABLE, NATIVE_COST_PARAMS},
+    types::ModuleBundle,
+};
 use move_vm_runtime::move_vm::MoveVM;
+use move_vm_test_utils::gas_schedule::GasStatus;
 use move_vm_types::gas::GasMeter;
 use move_vm_types::loaded_data::runtime_types::{CachedStructIndex, Type};
+use types::GasStrategy;
 
 /// Represents failures that might occur during native token transaction
 #[derive(Debug)]
@@ -102,7 +107,8 @@ where
         // config: VMConfig,
     ) -> Result<Mvm<S> /*, Api>*/, Error> {
         Ok(Mvm {
-            vm: MoveVM::new(all_natives(CORE_CODE_ADDRESS, GasParameters::zeros())).map_err(
+            // TODO(rqnsom): see if we can avoid GAS_PARAMS cloning
+            vm: MoveVM::new(all_natives(CORE_CODE_ADDRESS, NATIVE_COST_PARAMS.clone())).map_err(
                 |err| {
                     let (code, _, msg, _, _, _, _) = err.all_data();
                     anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
@@ -157,13 +163,14 @@ where
         &self,
         module: &[u8],
         address: AccountAddress,
-        gas: &mut impl GasMeter,
+        gas: GasStrategy,
     ) -> VmResult {
         let mut sess = self.vm.new_session(&self.warehouse);
+        let mut gas_status: GasStatus = GasStatus::from(gas);
 
-        let result = sess.publish_module(module.to_vec(), address, gas);
+        let result = sess.publish_module(module.to_vec(), address, &mut gas_status);
 
-        self.handle_result(result.and_then(|_| sess.finish()), gas)
+        self.handle_result(result.and_then(|_| sess.finish()), gas_status)
     }
 
     /// Publish a package of modules into the storage under the given address.
@@ -171,13 +178,15 @@ where
         &self,
         package: &[u8],
         address: AccountAddress,
-        gas: &mut impl GasMeter,
+        gas: GasStrategy,
     ) -> VmResult {
+        let mut gas_status: GasStatus = GasStatus::from(gas);
+
         let modules = ModuleBundle::try_from(package).map_err(|e| {
             VmResult::new(
                 StatusCode::UNKNOWN_MODULE,
                 Some(e.to_string()),
-                gas.balance_internal().into(),
+                gas_status.balance_internal().into(),
             )
         });
 
@@ -188,9 +197,9 @@ where
 
         let mut sess = self.vm.new_session(&self.warehouse);
 
-        let result = sess.publish_module_bundle(modules, address, gas);
+        let result = sess.publish_module_bundle(modules, address, &mut gas_status);
 
-        self.handle_result(result.and_then(|_| sess.finish()), gas)
+        self.handle_result(result.and_then(|_| sess.finish()), gas_status)
     }
 
     /// Execute script using the given arguments (args).
@@ -199,7 +208,7 @@ where
         script: &[u8],
         type_args: Vec<TypeTag>,
         args: Vec<&[u8]>,
-        gas: &mut impl GasMeter,
+        gas: GasStrategy,
     ) -> VmResult {
         self.execute_script_worker(
             Transaction {
@@ -221,7 +230,7 @@ where
         func_name: Identifier,
         type_args: Vec<TypeTag>,
         args: Vec<&[u8]>,
-        gas: &mut impl GasMeter,
+        gas: GasStrategy,
     ) -> VmResult {
         self.execute_script_worker(
             Transaction {
@@ -238,13 +247,19 @@ where
     }
 
     /// Execute script using the given arguments (args).
-    fn execute_script_worker(&self, transaction: Transaction, gas: &mut impl GasMeter) -> VmResult {
+    fn execute_script_worker(&self, transaction: Transaction, gas: GasStrategy) -> VmResult {
+        let mut gas_status = GasStatus::from(gas);
         let mut sess = self.vm.new_session(&self.warehouse);
         let result;
 
         match transaction.call {
             Call::Script { code } => {
-                result = sess.execute_script(code, transaction.type_args, transaction.args, gas);
+                result = sess.execute_script(
+                    code,
+                    transaction.type_args,
+                    transaction.args,
+                    &mut gas_status,
+                );
             }
             Call::ScriptFunction {
                 mod_address,
@@ -256,23 +271,26 @@ where
                     &func_name,
                     transaction.type_args,
                     transaction.args,
-                    gas,
+                    &mut gas_status,
                 );
             }
         }
 
-        self.handle_result(result.and_then(|_| sess.finish()), gas)
+        self.handle_result(result.and_then(|_| sess.finish()), gas_status)
     }
 
     fn handle_result(
         &self,
         result: VMResult<(ChangeSet, Vec<Event>)>,
-        gas: &mut impl GasMeter,
+        gas_status: GasStatus,
     ) -> VmResult {
         match result {
             Ok((changeset, _)) => {
-                let mut result =
-                    VmResult::new(StatusCode::EXECUTED, None, gas.balance_internal().into());
+                let mut result = VmResult::new(
+                    StatusCode::EXECUTED,
+                    None,
+                    gas_status.balance_internal().into(),
+                );
 
                 if let Err(e) = self.warehouse.apply_changes(changeset) {
                     result.status_code = StatusCode::STORAGE_ERROR;
@@ -283,7 +301,11 @@ where
             }
             Err(err) => {
                 let (status_code, _, msg, _, _, _, _) = err.all_data();
-                VmResult::new(status_code, msg.clone(), gas.balance_internal().into())
+                VmResult::new(
+                    status_code,
+                    msg.clone(),
+                    gas_status.balance_internal().into(),
+                )
             }
         }
     }
@@ -323,6 +345,16 @@ where
             Type::Reference(r) => Self::type_to_token(*r),
             Type::MutableReference(m) => Self::type_to_token(*m),
             Type::TyParam(p) => SignatureToken::TypeParameter(p),
+        }
+    }
+}
+
+impl<'a> From<GasStrategy> for GasStatus<'a> {
+    fn from(strategy: GasStrategy) -> Self {
+        match strategy {
+            GasStrategy::Metered(amount) => GasStatus::new(&INSTRUCTION_COST_TABLE, amount.into()),
+            GasStrategy::DryRun => GasStatus::new(&INSTRUCTION_COST_TABLE, u64::MAX.into()),
+            GasStrategy::Unmetered => GasStatus::new_unmetered(),
         }
     }
 }
