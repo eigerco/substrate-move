@@ -173,16 +173,16 @@ where
         self.handle_result(result.and_then(|_| sess.finish()), gas_status)
     }
 
-    /// Publish a package of modules into the storage under the given address.
-    pub fn publish_module_package(
+    /// Publish a bundle of modules into the storage under the given address.
+    pub fn publish_module_bundle(
         &self,
-        package: &[u8],
+        bundle: &[u8],
         address: AccountAddress,
         gas: GasStrategy,
     ) -> VmResult {
         let mut gas_status: GasStatus = GasStatus::from(gas);
 
-        let modules = ModuleBundle::try_from(package).map_err(|e| {
+        let modules = ModuleBundle::try_from(bundle).map_err(|e| {
             VmResult::new(
                 StatusCode::UNKNOWN_MODULE,
                 Some(e.to_string()),

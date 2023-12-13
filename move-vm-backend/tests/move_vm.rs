@@ -2,6 +2,7 @@ use crate::mock::StorageMock;
 use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::StructTag;
+use move_core_types::language_storage::CORE_CODE_ADDRESS as ADDR_STD;
 use move_vm_backend::Mvm;
 use move_vm_backend_common::types::ModuleBundle;
 
@@ -83,7 +84,7 @@ fn publish_module_test() {
 
 #[test]
 // This test heavily depends on Move.toml files for thes used Move packages.
-fn publish_module_package_from_multiple_module_files() {
+fn publish_module_bundle_from_multiple_module_files() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
     let gas = GasStrategy::Unmetered;
@@ -96,8 +97,8 @@ fn publish_module_package_from_multiple_module_files() {
     let modules = ModuleBundle::new(vec![module_1.clone(), module_2.clone()])
         .encode()
         .unwrap();
-    let result = vm.publish_module_package(&modules, addr, gas);
-    assert!(result.is_ok(), "failed to publish the package");
+    let result = vm.publish_module_bundle(&modules, addr, gas);
+    assert!(result.is_ok(), "failed to publish the bundle");
 
     // Recreate the storage and the MoveVM
     let store = StorageMock::new();
@@ -106,16 +107,16 @@ fn publish_module_package_from_multiple_module_files() {
     let modules = ModuleBundle::new(vec![module_2, module_1])
         .encode()
         .unwrap();
-    let result = vm.publish_module_package(&modules, addr, gas);
+    let result = vm.publish_module_bundle(&modules, addr, gas);
     assert!(
         result.is_err(),
-        "publishing a package with a wrong order succeeded"
+        "publishing a bundle with a wrong order succeeded"
     );
 }
 
 #[test]
 // This test heavily depends on Move.toml files for thes used Move packages.
-fn publish_module_package_from_bundle_file() {
+fn publish_module_bundle_from_bundle_file() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
     let gas = GasStrategy::Unmetered;
@@ -123,8 +124,8 @@ fn publish_module_package_from_bundle_file() {
     let bundle = read_bundle_from_project("using_stdlib_natives", "using_stdlib_natives");
     let addr = AccountAddress::from_hex_literal("0x2").unwrap();
 
-    let result = vm.publish_module_package(&bundle, addr, gas);
-    assert!(result.is_ok(), "failed to publish the package");
+    let result = vm.publish_module_bundle(&bundle, addr, gas);
+    assert!(result.is_ok(), "failed to publish the bundle");
 }
 
 #[allow(non_snake_case)]
@@ -166,8 +167,8 @@ fn publish_module_using_stdlib_full_fails() {
         read_module_bytes_from_project("using_stdlib_full", "StringAndVector");
     let addr_StdNativesUser = AccountAddress::from_hex_literal("0x3").unwrap();
 
-    // In order to publish a module which is using the full stdlib package, we first must publish
-    // the stdlib package itself to the MoveVM.
+    // In order to publish a module which is using the full stdlib bundle, we first must publish
+    // the stdlib bundle itself to the MoveVM.
     let result = vm.publish_module(&mod_using_stdlib_natives, addr_StdNativesUser, gas);
     assert!(result.is_err(), "the module shouldn't be published");
 }
@@ -203,9 +204,8 @@ fn get_resource() {
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
     let gas = GasStrategy::Unmetered;
 
-    let addr_std = AccountAddress::from_hex_literal("0x1").unwrap();
     let stdlib = move_stdlib::move_stdlib_bundle();
-    let result = vm.publish_module_package(&stdlib, addr_std, gas);
+    let result = vm.publish_module_bundle(&stdlib, ADDR_STD, gas);
 
     assert!(result.is_ok(), "Failed to publish the stdlib bundle");
 
@@ -349,9 +349,8 @@ fn execute_function_test() {
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
     let gas = GasStrategy::Unmetered;
 
-    let addr_std = AccountAddress::from_hex_literal("0x1").unwrap();
     let stdlib = move_stdlib::move_stdlib_bundle();
-    let result = vm.publish_module_package(&stdlib, addr_std, gas);
+    let result = vm.publish_module_bundle(&stdlib, ADDR_STD, gas);
 
     assert!(result.is_ok(), "Failed to publish the stdlib bundle");
 
@@ -378,9 +377,8 @@ fn execute_function_test_without_enough_gas() {
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
     let gas = GasStrategy::Unmetered;
 
-    let addr_std = AccountAddress::from_hex_literal("0x1").unwrap();
     let stdlib = move_stdlib::move_stdlib_bundle();
-    let result = vm.publish_module_package(&stdlib, addr_std, gas);
+    let result = vm.publish_module_bundle(&stdlib, ADDR_STD, gas);
 
     assert!(result.is_ok(), "Failed to publish the stdlib bundle");
 

@@ -2,7 +2,7 @@ use alloc::vec::Vec;
 use anyhow::{Error, Result};
 use serde::{Deserialize, Serialize};
 
-/// Package contains a list of module bytecodes.
+/// Bundle contains a list of module bytecodes.
 #[derive(Serialize, Deserialize)]
 pub struct ModuleBundle {
     /// Module bytecodes.
