@@ -1,10 +1,11 @@
 use alloc::string::String;
 use alloc::vec::Vec;
 use move_core_types::account_address::AccountAddress;
+use move_core_types::gas_algebra::GasQuantity;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::TypeTag;
 use move_core_types::vm_status::StatusCode;
-use move_vm_backend_common::gas_schedule::INSTRUCTION_COST_TABLE;
+use move_vm_backend_common::gas_schedule::{GAS_COST_PER_PUBLISHED_BYTE, INSTRUCTION_COST_TABLE};
 use move_vm_test_utils::gas_schedule::GasStatus;
 
 /// Call type used to determine if we are calling script or function inside some module.
@@ -111,5 +112,20 @@ impl GasHandler<'_> {
         };
 
         Self { dry_run, status }
+    }
+
+    /// Charges write operations linearly according to the provided byte length.
+    pub(crate) fn charge_publishing_to_storage(
+        &mut self,
+        num_bytes: usize,
+    ) -> Result<(), VmResult> {
+        let remaining_gas = self.status.remaining_gas();
+        let amount = GasQuantity::new(num_bytes as u64 * GAS_COST_PER_PUBLISHED_BYTE);
+
+        self.status.deduct_gas(amount).map_err(|e| VmResult {
+            status_code: e.major_status(),
+            error_message: None,
+            gas_used: remaining_gas.into(),
+        })
     }
 }

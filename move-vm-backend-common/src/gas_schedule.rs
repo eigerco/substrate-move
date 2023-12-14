@@ -19,6 +19,10 @@ use move_core_types::u256;
 use move_stdlib::natives::GasParameters;
 use move_vm_test_utils::gas_schedule::{new_from_instructions, CostTable, GasCost};
 
+// TODO(rqnsom): tweak the cost
+/// A predefined gas cost to published byte ratio.
+pub const GAS_COST_PER_PUBLISHED_BYTE: u64 = 100;
+
 lazy_static! {
     // TODO(rqnsom): tweak the cost for intructions
     /// A predefined gas strategy for instruction table cost.

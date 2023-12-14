@@ -160,9 +160,14 @@ where
         address: AccountAddress,
         gas: GasStrategy,
     ) -> VmResult {
-        let mut sess = self.vm.new_session(&self.warehouse);
         let mut gas_handler = GasHandler::new(gas);
 
+        // MoveVM by default doesn't charge gas for publishing, so we need to do it manually here.
+        if let Err(result) = gas_handler.charge_publishing_to_storage(module.len()) {
+            return result;
+        }
+
+        let mut sess = self.vm.new_session(&self.warehouse);
         let result = sess.publish_module(module.to_vec(), address, &mut gas_handler.status);
 
         self.handle_result(result.and_then(|_| sess.finish()), gas_handler)
@@ -190,8 +195,12 @@ where
             Err(e) => return e,
         };
 
-        let mut sess = self.vm.new_session(&self.warehouse);
+        // MoveVM by default doesn't charge gas for publishing, so we need to do it manually here.
+        if let Err(result) = gas_handler.charge_publishing_to_storage(bundle.len()) {
+            return result;
+        }
 
+        let mut sess = self.vm.new_session(&self.warehouse);
         let result = sess.publish_module_bundle(modules, address, &mut gas_handler.status);
 
         self.handle_result(result.and_then(|_| sess.finish()), gas_handler)
