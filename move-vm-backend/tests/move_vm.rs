@@ -207,13 +207,13 @@ fn get_resource() {
     let stdlib = move_stdlib::move_stdlib_bundle();
     let result = vm.publish_module_bundle(&stdlib, ADDR_STD, gas);
 
-    assert!(result.is_ok(), "Failed to publish the stdlib bundle");
+    assert!(result.is_ok(), "failed to publish the stdlib bundle");
 
     let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let module = read_module_bytes_from_project("basic_coin", "BasicCoin");
     let result = vm.publish_module(&module, address, gas);
 
-    assert!(result.is_ok(), "Failed to publish the module");
+    assert!(result.is_ok(), "failed to publish the module");
 
     let script = read_script_bytes_from_project("basic_coin", "main");
     let addr_param = bcs::to_bytes(&address).unwrap();
@@ -352,13 +352,13 @@ fn execute_function_test() {
     let stdlib = move_stdlib::move_stdlib_bundle();
     let result = vm.publish_module_bundle(&stdlib, ADDR_STD, gas);
 
-    assert!(result.is_ok(), "Failed to publish the stdlib bundle");
+    assert!(result.is_ok(), "failed to publish the stdlib bundle");
 
     let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let module = read_module_bytes_from_project("basic_coin", "BasicCoin");
     let result = vm.publish_module(&module, address, gas);
 
-    assert!(result.is_ok(), "Failed to publish the module");
+    assert!(result.is_ok(), "failed to publish the module");
 
     let addr_param = bcs::to_bytes(&address).unwrap();
     let mod_name = Identifier::new("BasicCoin").unwrap();
@@ -372,7 +372,40 @@ fn execute_function_test() {
 }
 
 #[test]
-fn execute_function_test_without_enough_gas() {
+fn publishing_fails_with_insufficient_gas() {
+    let store = StorageMock::new();
+    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+
+    // Try to publish a bundle
+    {
+        let stdlib = move_stdlib::move_stdlib_bundle();
+
+        let gas = GasStrategy::Metered(1);
+        let result = vm.publish_module_bundle(&stdlib, ADDR_STD, gas);
+
+        assert!(
+            result.is_err(),
+            "publishing succeeded with insufficient amount of gas"
+        );
+    }
+
+    // Try to publish a module
+    {
+        let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
+        let module = read_module_bytes_from_project("empty", "Empty");
+
+        let gas = GasStrategy::Metered(1);
+        let result = vm.publish_module(&module, address, gas);
+
+        assert!(
+            result.is_err(),
+            "publishing succeeded with insufficient amount of gas"
+        );
+    }
+}
+
+#[test]
+fn script_execution_fails_with_insufficient_gas() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
     let gas = GasStrategy::Unmetered;
@@ -380,13 +413,13 @@ fn execute_function_test_without_enough_gas() {
     let stdlib = move_stdlib::move_stdlib_bundle();
     let result = vm.publish_module_bundle(&stdlib, ADDR_STD, gas);
 
-    assert!(result.is_ok(), "Failed to publish the stdlib bundle");
+    assert!(result.is_ok(), "failed to publish the stdlib bundle");
 
     let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let module = read_module_bytes_from_project("basic_coin", "BasicCoin");
     let result = vm.publish_module(&module, address, gas);
 
-    assert!(result.is_ok(), "Failed to publish the module");
+    assert!(result.is_ok(), "failed to publish the module");
 
     let addr_param = bcs::to_bytes(&address).unwrap();
     let mod_name = Identifier::new("BasicCoin").unwrap();
