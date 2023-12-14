@@ -4024,7 +4024,6 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "bcs 0.1.4",
- "lazy_static 1.4.0",
  "move-binary-format",
  "move-core-types",
  "move-stdlib",

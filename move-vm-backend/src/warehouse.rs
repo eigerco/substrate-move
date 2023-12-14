@@ -1,15 +1,12 @@
 use crate::{
-    deposit::{Deposit, DEPOSIT_TEMPLATE},
     storage::Storage,
     //    SubstrateAPI,
 };
 use alloc::{
-    borrow::ToOwned,
     collections::{
         btree_map::Entry::{Occupied, Vacant},
         BTreeMap,
     },
-    vec,
     vec::Vec,
 };
 use anyhow::{bail, Error, Result};
@@ -22,10 +19,7 @@ use move_core_types::effects::{
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::{ModuleId, StructTag};
 use move_core_types::resolver::{ModuleResolver, ResourceResolver};
-use move_core_types::value::{MoveStructLayout, MoveTypeLayout};
-use move_vm_types::values::{Struct, Value};
 use serde::{Deserialize, Serialize};
-use MoveTypeLayout::Address;
 
 /// Structure holding account data which is held under one Move address
 /// in Substrate storage).
@@ -90,36 +84,16 @@ impl<S: Storage /*, Api: SubstrateAPI*/> Warehouse<S /*, Api*/> {
     pub(crate) fn apply_changes(&self, changeset: ChangeSet) -> Result<()> {
         for (account, changeset) in changeset.into_inner() {
             let key = account.as_slice();
-            let mut store_account = match self.storage.get(key) {
+            let mut account = match self.storage.get(key) {
                 Some(value) => bcs::from_bytes(&value).map_err(Error::msg)?,
                 _ => AccountData::default(),
             };
 
             let (modules, resources) = changeset.into_inner();
-            let mut unprocessed_resources = vec![];
-            AccountData::apply_changes(&mut store_account.modules, modules)?;
-            // process Deposit
-            for (tag, res) in resources {
-                match res {
-                    New(ref data) | Modify(ref data) => {
-                        if let Ok(deposit) = bcs::from_bytes::<Deposit>(data) {
-                            let (_destination, _amount) = deposit.into();
-                            // make actual transaction using SubstrateApi
-                            /*self.substrate_api
-                            .transfer(account, destination, amount)
-                            .map_err(|e| Error::msg(e.to_string()))?;*/
-                        } else {
-                            unprocessed_resources.push((tag, res));
-                        }
-                    }
-                    _ => {
-                        unprocessed_resources.push((tag, res));
-                    } // we ignore Delete
-                }
-            }
-            AccountData::apply_changes(&mut store_account.resources, unprocessed_resources)?;
+            AccountData::apply_changes(&mut account.modules, modules)?;
+            AccountData::apply_changes(&mut account.resources, resources)?;
 
-            let account_bytes = bcs::to_bytes(&store_account).map_err(Error::msg)?;
+            let account_bytes = bcs::to_bytes(&account).map_err(Error::msg)?;
             self.storage.set(key, &account_bytes);
         }
 
@@ -161,17 +135,6 @@ impl<S: Storage /*, Api: SubstrateAPI*/> ResourceResolver for Warehouse<S /*, Ap
         address: &AccountAddress,
         tag: &StructTag,
     ) -> Result<Option<Vec<u8>>, Self::Error> {
-        if tag == &*DEPOSIT_TEMPLATE {
-            let serialized = Value::struct_(Struct::pack([
-                Value::address(address.to_owned()),
-                //Value::u128(self.substrate_api.get_balance(*address)),
-            ]))
-            .simple_serialize(&MoveTypeLayout::Struct(MoveStructLayout::Runtime(vec![
-                Address,
-                MoveTypeLayout::U128,
-            ])));
-            return Ok(serialized);
-        }
         let raw_account = self.storage.get(address.as_slice());
 
         if let Some(raw_account) = raw_account {
