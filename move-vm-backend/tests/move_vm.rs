@@ -402,3 +402,24 @@ fn execute_function_test_without_enough_gas() {
         "script execution succeeded with small amount of gas"
     );
 }
+
+#[test]
+// This test heavily depends on Move.toml files for thes used Move packages.
+fn dry_run_gas_strategy_doesnt_update_storage() {
+    let store = StorageMock::new();
+    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+
+    let module = read_module_bytes_from_project("using_stdlib_natives", "Vector");
+    let address = AccountAddress::from_hex_literal("0x2").unwrap();
+
+    let gas = GasStrategy::DryRun;
+    let result = vm.publish_module(&module, address, gas);
+    assert!(result.is_ok(), "failed to publish the module");
+
+    let result = vm.get_module(address, "Vector");
+    assert_eq!(
+        result.expect("failed to get the module"),
+        None,
+        "received module although the dry run strategy was enabled"
+    );
+}

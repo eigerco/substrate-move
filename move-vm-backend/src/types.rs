@@ -4,6 +4,8 @@ use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::TypeTag;
 use move_core_types::vm_status::StatusCode;
+use move_vm_backend_common::gas_schedule::INSTRUCTION_COST_TABLE;
+use move_vm_test_utils::gas_schedule::GasStatus;
 
 /// Call type used to determine if we are calling script or function inside some module.
 #[derive(Debug)]
@@ -87,4 +89,27 @@ pub enum GasStrategy {
     ///
     /// This option should be used only for testing and debugging purposes.
     Unmetered,
+}
+
+/// Internal gas handler.
+pub(crate) struct GasHandler<'a> {
+    /// Gas status is an input for the MoveVM which tracks spent gas.
+    pub(crate) status: GasStatus<'a>,
+    /// Dry run shouldn't make any changes to the MoveVM storage.
+    pub(crate) dry_run: bool,
+}
+
+impl GasHandler<'_> {
+    /// Constructs a new [`GasHandler`].
+    pub(crate) fn new(strategy: GasStrategy) -> Self {
+        let dry_run = matches!(strategy, GasStrategy::DryRun);
+
+        let status = match strategy {
+            GasStrategy::Metered(amount) => GasStatus::new(&INSTRUCTION_COST_TABLE, amount.into()),
+            GasStrategy::DryRun => GasStatus::new(&INSTRUCTION_COST_TABLE, u64::MAX.into()),
+            GasStrategy::Unmetered => GasStatus::new_unmetered(),
+        };
+
+        Self { dry_run, status }
+    }
 }
