@@ -67,7 +67,7 @@ impl SubstrateAPI for SimpleSubstrateApiMock {
 */
 
 #[test]
-// This test heavily depends on Move.toml files for thes used Move packages.
+// This test heavily depends on Move.toml files for the used Move packages.
 fn publish_module_test() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
@@ -83,7 +83,7 @@ fn publish_module_test() {
 }
 
 #[test]
-// This test heavily depends on Move.toml files for thes used Move packages.
+// This test heavily depends on Move.toml files for the used Move packages.
 fn publish_module_bundle_from_multiple_module_files() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
@@ -115,7 +115,7 @@ fn publish_module_bundle_from_multiple_module_files() {
 }
 
 #[test]
-// This test heavily depends on Move.toml files for thes used Move packages.
+// This test heavily depends on Move.toml files for the used Move packages.
 fn publish_module_bundle_from_bundle_file() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
@@ -130,7 +130,7 @@ fn publish_module_bundle_from_bundle_file() {
 
 #[allow(non_snake_case)]
 #[test]
-// This test heavily depends on Move.toml files for thes used Move packages.
+// This test heavily depends on Move.toml files for the used Move packages.
 fn publish_module_dependent_on_stdlib_natives() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
@@ -157,7 +157,7 @@ fn publish_module_dependent_on_stdlib_natives() {
 
 #[allow(non_snake_case)]
 #[test]
-// This test heavily depends on Move.toml files for thes used Move packages.
+// This test heavily depends on Move.toml files for the used Move packages.
 fn publish_module_using_stdlib_full_fails() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
@@ -174,7 +174,7 @@ fn publish_module_using_stdlib_full_fails() {
 }
 
 #[test]
-// This test heavily depends on Move.toml files for thes used Move packages.
+// This test heavily depends on Move.toml files for the used Move packages.
 fn get_module_and_module_abi() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
@@ -198,7 +198,7 @@ fn get_module_and_module_abi() {
 }
 
 #[test]
-// This test heavily depends on Move.toml files for thes used Move packages.
+// This test heavily depends on Move.toml files for the used Move packages.
 fn get_resource() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
@@ -404,7 +404,7 @@ fn execute_function_test_without_enough_gas() {
 }
 
 #[test]
-// This test heavily depends on Move.toml files for thes used Move packages.
+// This test heavily depends on Move.toml files for the used Move packages.
 fn dry_run_gas_strategy_doesnt_update_storage() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
