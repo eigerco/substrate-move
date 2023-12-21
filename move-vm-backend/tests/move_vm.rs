@@ -3,6 +3,7 @@ use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::StructTag;
 use move_core_types::language_storage::CORE_CODE_ADDRESS as ADDR_STD;
+use move_vm_backend::types::GasAmount;
 use move_vm_backend::Mvm;
 use move_vm_backend_common::types::ModuleBundle;
 
@@ -47,6 +48,14 @@ fn read_script_bytes_from_project(project: &str, script_name: &str) -> Vec<u8> {
     read_bytes(&path)
 }
 
+/// Estimate gas for published module / bundle.
+#[inline]
+fn estimate_gas_for_published_bytecode(bytecode: &[u8]) -> u64 {
+    let raw_gas_cost =
+        bytecode.len() as u64 * move_vm_backend_common::gas_schedule::GAS_COST_PER_PUBLISHED_BYTE;
+    num_integer::div_ceil(raw_gas_cost, 1000)
+}
+
 /*
 struct SimpleSubstrateApiMock {}
 
@@ -75,11 +84,37 @@ fn publish_module_test() {
     let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let module = read_module_bytes_from_project("empty", "Empty");
 
-    let gas = GasStrategy::Unmetered;
+    // For the first case, use the maximum amount of gas.
+    let provided_gas_amount = GasAmount::max();
+    let gas = GasStrategy::Metered(provided_gas_amount);
 
     let result = vm.publish_module(&module, address, gas);
 
+    let estimated_gas = estimate_gas_for_published_bytecode(&module);
     assert!(result.is_ok(), "failed to publish the module");
+    assert_eq!(result.gas_used, estimated_gas, "invalid gas estimate");
+    assert!(
+        result.gas_used < provided_gas_amount.inner(),
+        "invalid gas calulation"
+    );
+
+    // Prove that publishing will fail with insufficient gas.
+    {
+        let store = StorageMock::new();
+        let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+        let gas = GasStrategy::Metered(GasAmount::new(estimated_gas).unwrap());
+        let result = vm.publish_module(&module, address, gas);
+        assert!(result.is_ok(), "failed to publish the module");
+    }
+
+    // Prove that publishing will succeeded with the exact amount of gas.
+    {
+        let store = StorageMock::new();
+        let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+        let gas = GasStrategy::Metered(GasAmount::new(estimated_gas - 1).unwrap());
+        let result = vm.publish_module(&module, address, gas);
+        assert!(result.is_err(), "failed to publish the module");
+    }
 }
 
 #[test]
@@ -119,13 +154,21 @@ fn publish_module_bundle_from_multiple_module_files() {
 fn publish_module_bundle_from_bundle_file() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
-    let gas = GasStrategy::Unmetered;
+    let provided_gas_amount = GasAmount::max();
+    let gas = GasStrategy::Metered(provided_gas_amount);
 
     let bundle = read_bundle_from_project("using_stdlib_natives", "using_stdlib_natives");
     let addr = AccountAddress::from_hex_literal("0x2").unwrap();
 
     let result = vm.publish_module_bundle(&bundle, addr, gas);
     assert!(result.is_ok(), "failed to publish the bundle");
+
+    let estimated_gas = estimate_gas_for_published_bytecode(&bundle);
+    assert_eq!(result.gas_used, estimated_gas, "invalid gas estimate");
+    assert!(
+        result.gas_used < provided_gas_amount.inner(),
+        "invalid gas calulation"
+    );
 }
 
 #[allow(non_snake_case)]
@@ -380,7 +423,7 @@ fn publishing_fails_with_insufficient_gas() {
     {
         let stdlib = move_stdlib::move_stdlib_bundle();
 
-        let gas = GasStrategy::Metered(1);
+        let gas = GasStrategy::Metered(GasAmount::new(1).unwrap());
         let result = vm.publish_module_bundle(&stdlib, ADDR_STD, gas);
 
         assert!(
@@ -394,7 +437,7 @@ fn publishing_fails_with_insufficient_gas() {
         let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
         let module = read_module_bytes_from_project("empty", "Empty");
 
-        let gas = GasStrategy::Metered(1);
+        let gas = GasStrategy::Metered(GasAmount::new(1).unwrap());
         let result = vm.publish_module(&module, address, gas);
 
         assert!(
@@ -425,7 +468,7 @@ fn script_execution_fails_with_insufficient_gas() {
     let mod_name = Identifier::new("BasicCoin").unwrap();
     let func_name = Identifier::new("publish_balance").unwrap();
 
-    let gas = GasStrategy::Metered(1);
+    let gas = GasStrategy::Metered(GasAmount::new(1).unwrap());
     let type_args: Vec<TypeTag> = vec![];
     let params: Vec<&[u8]> = vec![&addr_param];
     let result = vm.execute_function(address, mod_name, func_name, type_args, params, gas);
@@ -448,6 +491,9 @@ fn dry_run_gas_strategy_doesnt_update_storage() {
     let gas = GasStrategy::DryRun;
     let result = vm.publish_module(&module, address, gas);
     assert!(result.is_ok(), "failed to publish the module");
+
+    let estimated_gas = estimate_gas_for_published_bytecode(&module);
+    assert_eq!(result.gas_used, estimated_gas, "invalid gas estimate");
 
     let result = vm.get_module(address, "Vector");
     assert_eq!(

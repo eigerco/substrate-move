@@ -18,6 +18,7 @@ move-vm-runtime = { path = "../language/move-vm/runtime", default-features = fal
 move-vm-test-utils = { path = "../language/move-vm/test-utils", default-features = false }
 move-vm-types = { path = "../language/move-vm/types", default-features = false }
 serde = { version = "1.0", default-features = false, features = ["derive"] }
+num-integer = { version = "0.1", default-features = false }
 
 [dev-dependencies]
 move-vm-test-utils = { path = "../language/move-vm/test-utils" }

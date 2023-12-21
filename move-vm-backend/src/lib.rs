@@ -31,7 +31,6 @@ use move_core_types::{
 use move_stdlib::natives::all_natives;
 use move_vm_backend_common::{gas_schedule::NATIVE_COST_PARAMS, types::ModuleBundle};
 use move_vm_runtime::move_vm::MoveVM;
-use move_vm_types::gas::GasMeter;
 use move_vm_types::loaded_data::runtime_types::{CachedStructIndex, Type};
 use types::{GasHandler, GasStrategy};
 
@@ -182,13 +181,8 @@ where
     ) -> VmResult {
         let mut gas_handler = GasHandler::new(gas);
 
-        let modules = ModuleBundle::try_from(bundle).map_err(|e| {
-            VmResult::new(
-                StatusCode::UNKNOWN_MODULE,
-                Some(e.to_string()),
-                gas_handler.status.balance_internal().into(),
-            )
-        });
+        let modules = ModuleBundle::try_from(bundle)
+            .map_err(|e| VmResult::new(StatusCode::UNKNOWN_MODULE, Some(e.to_string()), 0));
 
         let modules = match modules {
             Ok(modules) => modules.into_inner(),
@@ -285,11 +279,7 @@ where
     ) -> VmResult {
         match result {
             Ok((changeset, _)) => {
-                let mut result = VmResult::new(
-                    StatusCode::EXECUTED,
-                    None,
-                    gas_handler.status.balance_internal().into(),
-                );
+                let mut result = VmResult::new(StatusCode::EXECUTED, None, gas_handler.gas_used());
 
                 // No storage update!
                 if gas_handler.dry_run {
@@ -305,11 +295,7 @@ where
             }
             Err(err) => {
                 let (status_code, _, msg, _, _, _, _) = err.all_data();
-                VmResult::new(
-                    status_code,
-                    msg.clone(),
-                    gas_handler.status.balance_internal().into(),
-                )
+                VmResult::new(status_code, msg.clone(), 0)
             }
         }
     }
