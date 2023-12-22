@@ -4023,6 +4023,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "bcs 0.1.4",
+ "hashbrown 0.14.3",
  "move-binary-format",
  "move-core-types",
  "move-stdlib",
