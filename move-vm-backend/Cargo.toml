@@ -19,6 +19,7 @@ move-vm-test-utils = { path = "../language/move-vm/test-utils", default-features
 move-vm-types = { path = "../language/move-vm/types", default-features = false }
 serde = { version = "1.0", default-features = false, features = ["derive"] }
 num-integer = { version = "0.1", default-features = false }
+hashbrown = { version = "0.14", default-features = false, features = ["ahash"] }
 
 [dev-dependencies]
 move-vm-test-utils = { path = "../language/move-vm/test-utils" }
