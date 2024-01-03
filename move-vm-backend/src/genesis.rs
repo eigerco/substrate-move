@@ -1,10 +1,10 @@
 //! Provides a configuration to prepare the initial MoveVM storage state.
 
-use crate::alloc::borrow::ToOwned;
 use crate::Mvm;
 use crate::VmResult;
 use crate::{storage::Storage, types::GasStrategy};
 use alloc::borrow::Cow;
+use alloc::borrow::ToOwned;
 use alloc::vec::Vec;
 use core::cell::RefCell;
 use core::fmt;
