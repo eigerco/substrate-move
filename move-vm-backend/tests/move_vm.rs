@@ -1,8 +1,14 @@
+//! Integration tests for our MoveVM backend.
+//!
+//! Note:
+//! These test heavily depend on Move projects within tests/assets/move-projects.
+//!
 use crate::mock::StorageMock;
 use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::StructTag;
 use move_core_types::language_storage::CORE_CODE_ADDRESS as ADDR_STD;
+use move_vm_backend::genesis::VmGenesisConfig;
 use move_vm_backend::types::GasAmount;
 use move_vm_backend::Mvm;
 use move_vm_backend_common::types::ModuleBundle;
@@ -76,7 +82,6 @@ impl SubstrateAPI for SimpleSubstrateApiMock {
 */
 
 #[test]
-// This test heavily depends on Move.toml files for the used Move packages.
 fn publish_module_test() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
@@ -118,7 +123,6 @@ fn publish_module_test() {
 }
 
 #[test]
-// This test heavily depends on Move.toml files for the used Move packages.
 fn publish_module_bundle_from_multiple_module_files() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
@@ -150,7 +154,6 @@ fn publish_module_bundle_from_multiple_module_files() {
 }
 
 #[test]
-// This test heavily depends on Move.toml files for the used Move packages.
 fn publish_module_bundle_from_bundle_file() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
@@ -171,36 +174,32 @@ fn publish_module_bundle_from_bundle_file() {
     );
 }
 
-#[allow(non_snake_case)]
 #[test]
-// This test heavily depends on Move.toml files for the used Move packages.
 fn publish_module_dependent_on_stdlib_natives() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
     let gas = GasStrategy::Unmetered;
 
     let mod_using_stdlib_natives = read_module_bytes_from_project("using_stdlib_natives", "Vector");
-    let addr_StdNativesUser = AccountAddress::from_hex_literal("0x2").unwrap();
+    let addr_std_natives_user = AccountAddress::from_hex_literal("0x2").unwrap();
 
     // Natives are part of the MoveVM so no need to publish compiled stdlib bytecode modules.
-    let result = vm.publish_module(&mod_using_stdlib_natives, addr_StdNativesUser, gas);
+    let result = vm.publish_module(&mod_using_stdlib_natives, addr_std_natives_user, gas);
     assert!(result.is_ok(), "the first module cannot be published");
 
     let mod_depends_on_using_stdlib_natives =
         read_module_bytes_from_project("depends_on__using_stdlib_natives", "VectorUser");
-    let addr_TestingNatives = AccountAddress::from_hex_literal("0x4").unwrap();
+    let addr_testing_natives = AccountAddress::from_hex_literal("0x4").unwrap();
 
     let result = vm.publish_module(
         &mod_depends_on_using_stdlib_natives,
-        addr_TestingNatives,
+        addr_testing_natives,
         gas,
     );
     assert!(result.is_ok(), "the second module cannot be published");
 }
 
-#[allow(non_snake_case)]
 #[test]
-// This test heavily depends on Move.toml files for the used Move packages.
 fn publish_module_using_stdlib_full_fails() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
@@ -208,16 +207,36 @@ fn publish_module_using_stdlib_full_fails() {
 
     let mod_using_stdlib_natives =
         read_module_bytes_from_project("using_stdlib_full", "StringAndVector");
-    let addr_StdNativesUser = AccountAddress::from_hex_literal("0x3").unwrap();
+    let address = AccountAddress::from_hex_literal("0x3").unwrap();
 
     // In order to publish a module which is using the full stdlib bundle, we first must publish
     // the stdlib bundle itself to the MoveVM.
-    let result = vm.publish_module(&mod_using_stdlib_natives, addr_StdNativesUser, gas);
+    let result = vm.publish_module(&mod_using_stdlib_natives, address, gas);
     assert!(result.is_err(), "the module shouldn't be published");
 }
 
 #[test]
-// This test heavily depends on Move.toml files for the used Move packages.
+fn genesis_config_inits_stdlib_so_stdlib_full_can_be_published() {
+    let store = StorageMock::new();
+
+    // Publish the stdlib.
+    let genesis_cfg = VmGenesisConfig::default();
+    assert!(
+        genesis_cfg.apply(store.clone()).is_ok(),
+        "failed to apply the genesis configuration"
+    );
+
+    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+
+    let module = read_module_bytes_from_project("using_stdlib_full", "StringAndVector");
+    let address = AccountAddress::from_hex_literal("0x3").unwrap();
+
+    let gas = GasStrategy::DryRun;
+    let result = vm.publish_module(&module, address, gas);
+    assert!(result.is_ok(), "failed to publish the module");
+}
+
+#[test]
 fn get_module_and_module_abi() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
@@ -241,16 +260,18 @@ fn get_module_and_module_abi() {
 }
 
 #[test]
-// This test heavily depends on Move.toml files for the used Move packages.
 fn get_resource() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
     let gas = GasStrategy::Unmetered;
 
-    let stdlib = move_stdlib::move_stdlib_bundle();
-    let result = vm.publish_module_bundle(&stdlib, ADDR_STD, gas);
+    // Publish the stdlib.
+    let genesis_cfg = VmGenesisConfig::default();
+    assert!(
+        genesis_cfg.apply(store.clone()).is_ok(),
+        "failed to apply the genesis configuration"
+    );
 
-    assert!(result.is_ok(), "failed to publish the stdlib bundle");
+    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
 
     let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let module = read_module_bytes_from_project("basic_coin", "BasicCoin");
@@ -389,13 +410,16 @@ fn execute_script_generics_incorrect_params_test() {
 #[test]
 fn execute_function_test() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
     let gas = GasStrategy::Unmetered;
 
-    let stdlib = move_stdlib::move_stdlib_bundle();
-    let result = vm.publish_module_bundle(&stdlib, ADDR_STD, gas);
+    // Publish the stdlib.
+    let genesis_cfg = VmGenesisConfig::default();
+    assert!(
+        genesis_cfg.apply(store.clone()).is_ok(),
+        "failed to apply the genesis configuration"
+    );
 
-    assert!(result.is_ok(), "failed to publish the stdlib bundle");
+    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
 
     let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let module = read_module_bytes_from_project("basic_coin", "BasicCoin");
@@ -480,7 +504,6 @@ fn script_execution_fails_with_insufficient_gas() {
 }
 
 #[test]
-// This test heavily depends on Move.toml files for the used Move packages.
 fn dry_run_gas_strategy_doesnt_update_storage() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
@@ -501,4 +524,17 @@ fn dry_run_gas_strategy_doesnt_update_storage() {
         None,
         "received module although the dry run strategy was enabled"
     );
+}
+
+#[test]
+#[should_panic]
+// TODO(rqnsom): this one should not panic once the native functions are implemented
+fn manually_publish_substrate_stdlib_bundle() {
+    let store = StorageMock::new();
+    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let gas = GasStrategy::Unmetered;
+
+    let stdlib = move_stdlib::substrate_stdlib_bundle();
+    let result = vm.publish_module_bundle(&stdlib, ADDR_STD, gas);
+    assert!(result.is_ok(), "failed to publish the substrate stdlib");
 }
