@@ -10,7 +10,7 @@ use core::cell::RefCell;
 use core::fmt;
 use hashbrown::HashMap;
 use move_core_types::language_storage::CORE_CODE_ADDRESS;
-use move_stdlib::move_stdlib_bundle;
+use move_stdlib::{move_stdlib_bundle, substrate_stdlib_bundle};
 
 /// Error codes for [`GenesisConfig`].
 #[derive(Debug)]
@@ -34,9 +34,10 @@ impl fmt::Display for GenesisConfigError {
 ///
 /// By default - a precompiled standard library is used from the `substrate-move` repository.
 pub struct VmGenesisConfig {
+    /// Move standard library.
     stdlib_bundle: Vec<u8>,
-    // TODO: include some of these extras
-    // - substratefwk: Vec<u8>,
+    /// An extended standard library for Substrate framework.
+    substrate_stdlib_bundle: Vec<u8>,
     // - additional_bundles: Vec<Vec<u8>>,
     // - initial_script
 }
@@ -45,14 +46,20 @@ impl Default for VmGenesisConfig {
     fn default() -> Self {
         Self {
             stdlib_bundle: move_stdlib_bundle().to_vec(),
+            substrate_stdlib_bundle: substrate_stdlib_bundle().to_vec(),
         }
     }
 }
 
 impl VmGenesisConfig {
-    /// Configure the standard library.
-    pub fn configure_stdlib(&mut self, stdlib_bundle: Vec<u8>) {
-        self.stdlib_bundle = stdlib_bundle;
+    /// Configure the Move standard library.
+    pub fn configure_stdlib(&mut self, bundle: Vec<u8>) {
+        self.stdlib_bundle = bundle;
+    }
+
+    /// Configure the extendend standard library made for Substrate.
+    pub fn configure_substrate_stdlib(&mut self, bundle: Vec<u8>) {
+        self.substrate_stdlib_bundle = bundle;
     }
 
     /// Apply the configuration to the storage.
@@ -60,14 +67,19 @@ impl VmGenesisConfig {
         let storage_safe = StorageSafe::new(storage);
         let vm = Mvm::new(&storage_safe).map_err(|_| GenesisConfigError::MoveVmInitFailure)?;
 
-        let result = vm.publish_module_bundle(
-            &self.stdlib_bundle,
-            CORE_CODE_ADDRESS,
-            GasStrategy::Unmetered,
-        );
-        if !result.is_ok() {
-            return Err(GenesisConfigError::PublishBundle(result));
-        }
+        let publish_under_stdaddr = |bundle: &[u8]| {
+            let result =
+                vm.publish_module_bundle(&bundle, CORE_CODE_ADDRESS, GasStrategy::Unmetered);
+
+            if !result.is_ok() {
+                return Err(GenesisConfigError::PublishBundle(result));
+            }
+            Ok(())
+        };
+
+        publish_under_stdaddr(&self.stdlib_bundle)?;
+        // TODO(rqnsom): uncommment once we have native functions implemented
+        //publish_under_stdaddr(&self.substrate_stdlib_bundle)?;
 
         // In case of the successful initialization, apply changes to the storage.
         storage_safe.apply_changes();
