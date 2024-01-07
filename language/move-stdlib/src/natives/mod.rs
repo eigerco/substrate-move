@@ -2,6 +2,7 @@
 // Copyright (c) The Move Contributors
 // SPDX-License-Identifier: Apache-2.0
 
+pub mod balance;
 pub mod bcs;
 pub mod debug;
 pub mod event;
@@ -27,6 +28,7 @@ pub struct GasParameters {
     pub string: string::GasParameters,
     pub type_name: type_name::GasParameters,
     pub vector: vector::GasParameters,
+    pub balance: balance::GasParameters,
 
     #[cfg(feature = "testing")]
     pub unit_test: unit_test::GasParameters,
@@ -92,6 +94,11 @@ impl GasParameters {
                 destroy_empty: vector::DestroyEmptyGasParameters { base: 0.into() },
                 swap: vector::SwapGasParameters { base: 0.into() },
             },
+            balance: balance::GasParameters {
+                transfer: balance::TransferGasParameters { base: 0.into() },
+                cheque_amount: balance::ChequeAmountGasParameters { base: 0.into() },
+                total_amount: balance::TotalAmountGasParameters { base: 0.into() },
+            },
             #[cfg(feature = "testing")]
             unit_test: unit_test::GasParameters {
                 create_signers_for_testing: unit_test::CreateSignersForTestingGasParameters {
@@ -123,6 +130,7 @@ pub fn all_natives(
     add_natives!("string", string::make_all(gas_params.string));
     add_natives!("type_name", type_name::make_all(gas_params.type_name));
     add_natives!("vector", vector::make_all(gas_params.vector));
+    add_natives!("balance", balance::make_all(gas_params.balance));
     #[cfg(feature = "testing")]
     {
         add_natives!("unit_test", unit_test::make_all(gas_params.unit_test));

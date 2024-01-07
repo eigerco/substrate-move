@@ -968,6 +968,27 @@ impl SignerRef {
     pub fn borrow_signer(&self) -> PartialVMResult<Value> {
         Ok(Value(self.0.borrow_elem(0)?))
     }
+
+    pub fn address(&self) -> PartialVMResult<AccountAddress> {
+        match self.0.container() {
+            Container::Struct(a) => {
+                let addr = a.borrow();
+                if addr.len() != 1 {
+                    return Err(PartialVMError::new(StatusCode::TOO_MANY_PARAMETERS));
+                }
+
+                match &addr[0] {
+                    ValueImpl::Address(addr) => Ok(*addr),
+                    _ => Err(PartialVMError::new(
+                        StatusCode::UNABLE_TO_DESERIALIZE_ACCOUNT,
+                    )),
+                }
+            }
+            _ => Err(PartialVMError::new(
+                StatusCode::INVALID_PARAM_TYPE_FOR_DESERIALIZATION,
+            )),
+        }
+    }
 }
 
 /***************************************************************************************

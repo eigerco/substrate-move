@@ -215,6 +215,11 @@ lazy_static! {
                 destroy_empty: move_stdlib::natives::vector::DestroyEmptyGasParameters { base: 1000.into() },
                 swap: move_stdlib::natives::vector::SwapGasParameters { base: 1000.into() },
             },
+            balance: move_stdlib::natives::balance::GasParameters {
+                transfer: move_stdlib::natives::balance::TransferGasParameters { base: 1000.into() },
+                cheque_amount: move_stdlib::natives::balance::ChequeAmountGasParameters { base: 1000.into() },
+                total_amount: move_stdlib::natives::balance::TotalAmountGasParameters { base: 1000.into() },
+            },
             #[cfg(feature = "testing")]
             unit_test: move_stdlib::natives::unit_test::GasParameters {
                 create_signers_for_testing: move_stdlib::natives::unit_test::CreateSignersForTestingGasParameters {
