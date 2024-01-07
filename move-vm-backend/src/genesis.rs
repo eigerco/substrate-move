@@ -78,8 +78,7 @@ impl VmGenesisConfig {
         };
 
         publish_under_stdaddr(&self.stdlib_bundle)?;
-        // TODO(rqnsom): uncommment once we have native functions implemented
-        //publish_under_stdaddr(&self.substrate_stdlib_bundle)?;
+        publish_under_stdaddr(&self.substrate_stdlib_bundle)?;
 
         // In case of the successful initialization, apply changes to the storage.
         storage_safe.apply_changes();

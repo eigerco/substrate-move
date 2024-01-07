@@ -2,6 +2,8 @@
 //!
 //! Note:
 //! These test heavily depend on Move projects within tests/assets/move-projects.
+//! Some of these tests use addresses that need to match the address in Move project files -
+//! otherwise executing scripts or publishing won't work as expected.
 //!
 use crate::mock::StorageMock;
 use move_core_types::account_address::AccountAddress;
@@ -60,6 +62,18 @@ fn estimate_gas_for_published_bytecode(bytecode: &[u8]) -> u64 {
     let raw_gas_cost =
         bytecode.len() as u64 * move_vm_backend_common::gas_schedule::GAS_COST_PER_PUBLISHED_BYTE;
     num_integer::div_ceil(raw_gas_cost, 1000)
+}
+
+fn store_preloaded_with_genesis_cfg() -> StorageMock {
+    let genesis_cfg = VmGenesisConfig::default();
+    let store = StorageMock::new();
+
+    // Publish the stdlib.
+    assert!(
+        genesis_cfg.apply(store.clone()).is_ok(),
+        "genesis configuration failure"
+    );
+    store
 }
 
 /*
@@ -217,14 +231,7 @@ fn publish_module_using_stdlib_full_fails() {
 
 #[test]
 fn genesis_config_inits_stdlib_so_stdlib_full_can_be_published() {
-    let store = StorageMock::new();
-
-    // Publish the stdlib.
-    let genesis_cfg = VmGenesisConfig::default();
-    assert!(
-        genesis_cfg.apply(store.clone()).is_ok(),
-        "failed to apply the genesis configuration"
-    );
+    let store = store_preloaded_with_genesis_cfg();
 
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
 
@@ -535,4 +542,51 @@ fn manually_publish_substrate_stdlib_bundle() {
     let stdlib = move_stdlib::substrate_stdlib_bundle();
     let result = vm.publish_module_bundle(&stdlib, ADDR_STD, gas);
     assert!(result.is_ok(), "failed to publish the substrate stdlib");
+}
+
+#[test]
+fn run_scipt_that_simply_tests_balance_api() {
+    let store = store_preloaded_with_genesis_cfg();
+    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let gas = GasStrategy::Unmetered;
+
+    let script = read_script_bytes_from_project("substrate_balance", "balance_simple_api_test");
+
+    let src = AccountAddress::from_hex_literal("0xCAFE").unwrap();
+    let dst = AccountAddress::from_hex_literal("0x3EEE").unwrap();
+
+    let amount = bcs::to_bytes(&10u128).unwrap();
+    let src_addr = bcs::to_bytes(&src).unwrap();
+    let dst_addr = bcs::to_bytes(&dst).unwrap();
+    let params: Vec<&[u8]> = vec![&src_addr, &dst_addr, &amount];
+
+    let type_args: Vec<TypeTag> = vec![];
+
+    let result = vm.execute_script(&script, type_args, params, gas);
+    assert!(result.is_ok(), "failed to execute the script");
+}
+
+#[test]
+fn execute_transfer_script_and_check_balance_updates() {
+    let store = store_preloaded_with_genesis_cfg();
+    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let gas = GasStrategy::Unmetered;
+
+    let script = read_script_bytes_from_project("substrate_balance", "execute_transfer");
+
+    let src = AccountAddress::from_hex_literal("0xCAFE").unwrap();
+    let dst = AccountAddress::from_hex_literal("0x3EEE").unwrap();
+
+    let amount = bcs::to_bytes(&10u128).unwrap();
+    let src_addr = bcs::to_bytes(&src).unwrap();
+    let dst_addr = bcs::to_bytes(&dst).unwrap();
+    let params: Vec<&[u8]> = vec![&src_addr, &dst_addr, &amount];
+
+    let type_args: Vec<TypeTag> = vec![];
+
+    let result = vm.execute_script(&script, type_args, params, gas);
+
+    // TODO(rqnsom): add a test for the cheque logic here.
+
+    assert!(result.is_ok(), "failed to execute the script");
 }
