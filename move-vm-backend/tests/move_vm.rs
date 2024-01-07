@@ -527,8 +527,6 @@ fn dry_run_gas_strategy_doesnt_update_storage() {
 }
 
 #[test]
-#[should_panic]
-// TODO(rqnsom): this one should not panic once the native functions are implemented
 fn manually_publish_substrate_stdlib_bundle() {
     let store = StorageMock::new();
     let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
