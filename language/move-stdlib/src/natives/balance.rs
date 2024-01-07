@@ -74,7 +74,7 @@ pub fn native_cheque_amount(
 
     // TODO: ...
 
-    NativeResult::map_partial_vm_result_one(gas_params.base, Ok(Value::u128(0)))
+    NativeResult::map_partial_vm_result_one(gas_params.base, Ok(Value::u128(11)))
 }
 
 pub fn make_native_cheque_amount(gas_params: ChequeAmountGasParameters) -> NativeFunction {
@@ -109,7 +109,7 @@ pub fn native_total_amount(
 
     // TODO: ...
 
-    NativeResult::map_partial_vm_result_one(gas_params.base, Ok(Value::u128(0)))
+    NativeResult::map_partial_vm_result_one(gas_params.base, Ok(Value::u128(99)))
 }
 
 pub fn make_native_total_amount(gas_params: TotalAmountGasParameters) -> NativeFunction {
