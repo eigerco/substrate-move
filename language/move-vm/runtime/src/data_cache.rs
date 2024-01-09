@@ -303,4 +303,27 @@ impl<'r, 'l, S: MoveResolver> DataStore for TransactionDataCache<'r, 'l, S> {
     fn events(&self) -> &Vec<(Vec<u8>, u64, Type, MoveTypeLayout, Value)> {
         &self.event_data
     }
+
+    fn transfer(
+        &self,
+        src: AccountAddress,
+        dst: AccountAddress,
+        cheque_amount: u128,
+    ) -> PartialVMResult<bool> {
+        self.remote
+            .transfer(src, dst, cheque_amount)
+            .map_err(|_| PartialVMError::new(StatusCode::INTERNAL_TYPE_ERROR))
+    }
+
+    fn cheque_amount(&self, account: AccountAddress) -> PartialVMResult<u128> {
+        self.remote
+            .cheque_amount(account)
+            .map_err(|_| PartialVMError::new(StatusCode::INTERNAL_TYPE_ERROR))
+    }
+
+    fn total_amount(&self, account: AccountAddress) -> PartialVMResult<u128> {
+        self.remote
+            .total_amount(account)
+            .map_err(|_| PartialVMError::new(StatusCode::INTERNAL_TYPE_ERROR))
+    }
 }

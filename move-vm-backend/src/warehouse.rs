@@ -18,7 +18,7 @@ use move_core_types::effects::{
 };
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::{ModuleId, StructTag};
-use move_core_types::resolver::{ModuleResolver, ResourceResolver};
+use move_core_types::resolver::{BalanceResolver, ModuleResolver, ResourceResolver};
 use serde::{Deserialize, Serialize};
 
 /// Structure holding account data which is held under one Move address
@@ -146,5 +146,29 @@ impl<S: Storage /*, Api: SubstrateAPI*/> ResourceResolver for Warehouse<S /*, Ap
 
         // Even if the account is not found, we still return Ok(None) - it's not an error for MoveVM.
         Ok(None)
+    }
+}
+
+impl<S: Storage> BalanceResolver for Warehouse<S> {
+    type Error = Error;
+
+    fn transfer(
+        &self,
+        _src: AccountAddress,
+        _dst: AccountAddress,
+        _cheque_amount: u128,
+    ) -> Result<bool, Self::Error> {
+        // TODO(rqnsam): ...
+        Ok(true)
+    }
+
+    fn cheque_amount(&self, _account: AccountAddress) -> Result<u128, Self::Error> {
+        // TODO(rqnsam): ...
+        Ok(0)
+    }
+
+    fn total_amount(&self, _account: AccountAddress) -> Result<u128, Self::Error> {
+        // TODO(rqnsam): ...
+        Ok(0)
     }
 }

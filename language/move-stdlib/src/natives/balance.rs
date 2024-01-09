@@ -27,19 +27,21 @@ pub struct TransferGasParameters {
 
 pub fn native_transfer(
     gas_params: &TransferGasParameters,
-    _context: &mut NativeContext,
+    context: &mut NativeContext,
     ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
     debug_assert!(ty_args.is_empty());
     debug_assert!(args.len() == 3);
 
-    let _amount = pop_arg!(args, u128);
-    let _dst = pop_arg!(args, AccountAddress);
+    let amount = pop_arg!(args, u128);
+    let dst = pop_arg!(args, AccountAddress);
     let src = pop_arg!(args, SignerRef);
-    let _src = src.address()?;
 
-    NativeResult::map_partial_vm_result_one(gas_params.base, Ok(Value::bool(true)))
+    let src = src.address()?;
+    let ret = context.transfer(src, dst, amount)?;
+
+    NativeResult::map_partial_vm_result_one(gas_params.base, Ok(Value::bool(ret)))
 }
 
 pub fn make_native_transfer(gas_params: TransferGasParameters) -> NativeFunction {
@@ -63,18 +65,18 @@ pub struct ChequeAmountGasParameters {
 
 pub fn native_cheque_amount(
     gas_params: &ChequeAmountGasParameters,
-    _context: &mut NativeContext,
+    context: &mut NativeContext,
     ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
     debug_assert!(ty_args.is_empty());
     debug_assert!(args.len() == 1);
 
-    let _dst = pop_arg!(args, AccountAddress);
+    let account_addr = pop_arg!(args, AccountAddress);
 
-    // TODO: ...
+    let ret = context.cheque_amount(account_addr)?;
 
-    NativeResult::map_partial_vm_result_one(gas_params.base, Ok(Value::u128(11)))
+    NativeResult::map_partial_vm_result_one(gas_params.base, Ok(Value::u128(ret)))
 }
 
 pub fn make_native_cheque_amount(gas_params: ChequeAmountGasParameters) -> NativeFunction {
@@ -98,18 +100,18 @@ pub struct TotalAmountGasParameters {
 
 pub fn native_total_amount(
     gas_params: &TotalAmountGasParameters,
-    _context: &mut NativeContext,
+    context: &mut NativeContext,
     ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
     debug_assert!(ty_args.is_empty());
     debug_assert!(args.len() == 1);
 
-    let _dst = pop_arg!(args, AccountAddress);
+    let account_addr = pop_arg!(args, AccountAddress);
 
-    // TODO: ...
+    let ret = context.total_amount(account_addr)?;
 
-    NativeResult::map_partial_vm_result_one(gas_params.base, Ok(Value::u128(99)))
+    NativeResult::map_partial_vm_result_one(gas_params.base, Ok(Value::u128(ret)))
 }
 
 pub fn make_native_total_amount(gas_params: TotalAmountGasParameters) -> NativeFunction {
