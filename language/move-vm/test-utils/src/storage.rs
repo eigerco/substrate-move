@@ -14,7 +14,8 @@ use move_core_types::{
     effects::{AccountChangeSet, ChangeSet, Op},
     identifier::Identifier,
     language_storage::{ModuleId, StructTag},
-    resolver::{ModuleResolver, MoveResolver, ResourceResolver},
+    quick_balance_resolver_impl,
+    resolver::{BalanceResolver, ModuleResolver, MoveResolver, ResourceResolver},
 };
 
 #[cfg(feature = "table-extension")]
@@ -52,6 +53,9 @@ impl ResourceResolver for BlankStorage {
         Ok(None)
     }
 }
+
+// This is not supposed to be used in these tests.
+quick_balance_resolver_impl!(BlankStorage, ());
 
 #[cfg(feature = "table-extension")]
 impl TableResolver for BlankStorage {
@@ -101,6 +105,28 @@ impl<'a, 'b, S: ResourceResolver> ResourceResolver for DeltaStorage<'a, 'b, S> {
         }
 
         self.base.get_resource(address, tag)
+    }
+}
+
+// This is not supposed to be used in these tests.
+impl<'a, 'b, S: BalanceResolver> BalanceResolver for DeltaStorage<'a, 'b, S> {
+    type Error = S::Error;
+
+    fn transfer(
+        &self,
+        _src: AccountAddress,
+        _dst: AccountAddress,
+        _cheque_amount: u128,
+    ) -> Result<bool, Self::Error> {
+        unimplemented!("shouldn't be used");
+    }
+
+    fn cheque_amount(&self, _account: AccountAddress) -> Result<u128, Self::Error> {
+        unimplemented!("shouldn't be used");
+    }
+
+    fn total_amount(&self, _account: AccountAddress) -> Result<u128, Self::Error> {
+        unimplemented!("shouldn't be used");
     }
 }
 
@@ -322,3 +348,6 @@ impl TableResolver for InMemoryStorage {
         Ok(self.tables.get(handle).and_then(|t| t.get(key).cloned()))
     }
 }
+
+// This is not supposed to be used in these tests.
+quick_balance_resolver_impl!(InMemoryStorage, ());

@@ -9,7 +9,8 @@ use move_core_types::{
     effects::{ChangeSet, Op},
     identifier::Identifier,
     language_storage::{ModuleId, StructTag},
-    resolver::{ModuleResolver, ResourceResolver},
+    quick_balance_resolver_impl,
+    resolver::{BalanceResolver, ModuleResolver, ResourceResolver},
     value::{serialize_values, MoveValue},
     vm_status::{StatusCode, StatusType},
 };
@@ -526,6 +527,9 @@ impl ResourceResolver for BogusStorage {
         Err(PartialVMError::new(self.bad_status_code).finish(Location::Undefined))
     }
 }
+
+// This is not supposed to be used in these tests.
+quick_balance_resolver_impl!(BogusStorage, VMError);
 
 const LIST_OF_ERROR_CODES: &[StatusCode] = &[
     StatusCode::UNKNOWN_VALIDATION_STATUS,

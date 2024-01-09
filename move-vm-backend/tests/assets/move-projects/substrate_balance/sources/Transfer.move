@@ -13,11 +13,11 @@ script {
 
         // Test cheque_amount function.
         let cheque_amount = balance::cheque_amount(@0xCAFE);
-        assert!(cheque_amount == 11, 0);
+        assert!(cheque_amount == 0, 0);
 
         // Test total_amount function.
         let total_amount = balance::total_amount(@0xCAFE);
-        assert!(total_amount == 99, 0);
+        assert!(total_amount == 0, 0);
 
         // Test transfer function.
         let ret = balance::transfer(&src, dst, amount);

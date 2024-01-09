@@ -180,4 +180,21 @@ impl<'a, 'b> NativeContext<'a, 'b> {
     pub fn gas_balance(&self) -> InternalGas {
         self.gas_balance
     }
+
+    pub fn transfer(
+        &self,
+        src: AccountAddress,
+        dst: AccountAddress,
+        cheque_amount: u128,
+    ) -> PartialVMResult<bool> {
+        self.data_store.transfer(src, dst, cheque_amount)
+    }
+
+    pub fn cheque_amount(&self, account: AccountAddress) -> PartialVMResult<u128> {
+        self.data_store.cheque_amount(account)
+    }
+
+    pub fn total_amount(&self, account: AccountAddress) -> PartialVMResult<u128> {
+        self.data_store.total_amount(account)
+    }
 }

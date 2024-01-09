@@ -19,7 +19,8 @@ use move_core_types::{
     account_address::AccountAddress,
     identifier::{IdentStr, Identifier},
     language_storage::{ModuleId, StructTag, TypeTag},
-    resolver::{ModuleResolver, ResourceResolver},
+    quick_balance_resolver_impl,
+    resolver::{BalanceResolver, ModuleResolver, ResourceResolver},
     u256::U256,
     value::{serialize_values, MoveValue},
     vm_status::{StatusCode, StatusType},
@@ -266,6 +267,9 @@ impl ResourceResolver for RemoteStore {
         Ok(None)
     }
 }
+
+// This is not supposed to be used in these tests.
+quick_balance_resolver_impl!(RemoteStore, VMError);
 
 fn combine_signers_and_args(
     signers: Vec<AccountAddress>,

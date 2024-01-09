@@ -61,4 +61,22 @@ pub trait DataStore {
     ) -> PartialVMResult<()>;
 
     fn events(&self) -> &Vec<(Vec<u8>, u64, Type, MoveTypeLayout, Value)>;
+
+    // ---
+    // Balance operations
+    // ---
+
+    /// Execute transfer.
+    fn transfer(
+        &self,
+        src: AccountAddress,
+        dst: AccountAddress,
+        cheque_amount: u128,
+    ) -> PartialVMResult<bool>;
+
+    /// Get the current cheque amount for the address.
+    fn cheque_amount(&self, account: AccountAddress) -> PartialVMResult<u128>;
+
+    /// Get the total amount for the address.
+    fn total_amount(&self, account: AccountAddress) -> PartialVMResult<u128>;
 }
