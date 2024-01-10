@@ -529,7 +529,7 @@ impl ResourceResolver for BogusStorage {
 }
 
 // This is not supposed to be used in these tests.
-quick_balance_resolver_impl!(BogusStorage, VMError);
+quick_balance_resolver_impl!(BogusStorage, StatusCode);
 
 const LIST_OF_ERROR_CODES: &[StatusCode] = &[
     StatusCode::UNKNOWN_VALIDATION_STATUS,
