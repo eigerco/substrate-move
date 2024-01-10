@@ -2,7 +2,6 @@
 
 extern crate alloc;
 
-mod abi;
 pub mod genesis;
 pub mod storage;
 pub mod types;
@@ -11,7 +10,6 @@ mod warehouse;
 use crate::storage::Storage;
 use crate::types::{Call, Transaction, VmResult};
 use crate::warehouse::Warehouse;
-use abi::ModuleAbi;
 use alloc::{format, string::ToString, vec, vec::Vec};
 use anyhow::{anyhow, Error};
 use core::fmt::Display;
@@ -30,7 +28,9 @@ use move_core_types::{
     vm_status::StatusCode,
 };
 use move_stdlib::natives::all_natives;
-use move_vm_backend_common::{gas_schedule::NATIVE_COST_PARAMS, types::ModuleBundle};
+use move_vm_backend_common::{
+    abi::ModuleAbi, gas_schedule::NATIVE_COST_PARAMS, types::ModuleBundle,
+};
 use move_vm_runtime::move_vm::MoveVM;
 use move_vm_types::loaded_data::runtime_types::{CachedStructIndex, Type};
 use types::{GasHandler, GasStrategy};
@@ -129,17 +129,14 @@ where
         &self,
         address: AccountAddress,
         name: &str,
-    ) -> Result<Option<Vec<u8>>, Error> {
+    ) -> Result<Option<ModuleAbi>, Error> {
         if let Some(bytecode) = self.get_module(address, name)? {
-            return Ok(Some(
-                bcs::to_bytes(&ModuleAbi::from(
-                    CompiledModule::deserialize(&bytecode).map_err(Error::msg)?,
-                ))
-                .map_err(Error::msg)?,
-            ));
+            Ok(Some(ModuleAbi::from(
+                CompiledModule::deserialize(&bytecode).map_err(Error::msg)?,
+            )))
+        } else {
+            Ok(None)
         }
-
-        Ok(None)
     }
 
     /// Get resource using an address and a tag.

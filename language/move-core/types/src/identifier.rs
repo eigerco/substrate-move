@@ -34,9 +34,11 @@ use alloc::vec::Vec;
 use anyhow::{bail, Error, Result};
 use core::{borrow::Borrow, fmt};
 use core::{ops::Deref, str::FromStr};
+use parity_scale_codec::{Decode, Encode, Input, Output};
 #[cfg(any(test, feature = "fuzzing"))]
 use proptest::prelude::*;
 use ref_cast::RefCast;
+use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 
 /// Return true if this character can appear in a Move identifier.
@@ -93,7 +95,7 @@ pub(crate) static ALLOWED_NO_SELF_IDENTIFIERS: &str =
 /// An owned identifier.
 ///
 /// For more details, see the module level documentation.
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize, Deserialize, TypeInfo)]
 #[cfg_attr(feature = "fuzzing", derive(arbitrary::Arbitrary))]
 pub struct Identifier(Box<str>);
 // An identifier cannot be mutated so use Box<str> instead of String -- it is 1 word smaller.
@@ -178,6 +180,29 @@ impl Deref for Identifier {
 impl fmt::Display for Identifier {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", &self.0)
+    }
+}
+
+impl Encode for Identifier {
+    fn using_encoded<R, F: FnOnce(&[u8]) -> R>(&self, f: F) -> R {
+        self.0.as_ref().using_encoded(f)
+    }
+
+    fn encode_to<T: Output + ?Sized>(&self, dest: &mut T) {
+        self.0.as_ref().encode_to(dest)
+    }
+
+    fn size_hint(&self) -> usize {
+        self.0.as_ref().len()
+    }
+}
+
+impl Decode for Identifier {
+    fn decode<I: Input>(input: &mut I) -> Result<Self, parity_scale_codec::Error> {
+        let v = Vec::<u8>::decode(input)?;
+        let s = String::from_utf8(v)
+            .map_err(|_| parity_scale_codec::Error::from("String::from_utf8() error"))?;
+        Ok(Identifier(s.into_boxed_str()))
     }
 }
 

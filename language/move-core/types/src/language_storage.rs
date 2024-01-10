@@ -15,8 +15,10 @@ use core::{
     fmt::{self, Display, Formatter},
     str::FromStr,
 };
+use parity_scale_codec::{Decode, Encode};
 #[cfg(any(test, feature = "fuzzing"))]
 use proptest_derive::Arbitrary;
+use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 
 pub const CODE_TAG: u8 = 0;
@@ -192,7 +194,20 @@ impl ResourceKey {
 
 /// Represents the initial key into global storage where we first index by the address, and then
 /// the struct tag
-#[derive(Serialize, Deserialize, Debug, PartialEq, Hash, Eq, Clone, PartialOrd, Ord)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    PartialEq,
+    Hash,
+    Eq,
+    Clone,
+    PartialOrd,
+    Ord,
+    TypeInfo,
+    Encode,
+    Decode,
+)]
 #[cfg_attr(any(test, feature = "fuzzing"), derive(Arbitrary))]
 #[cfg_attr(any(test, feature = "fuzzing"), proptest(no_params))]
 pub struct ModuleId {
