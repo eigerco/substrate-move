@@ -2,6 +2,7 @@
 
 extern crate alloc;
 
+pub mod balance;
 pub mod genesis;
 pub mod storage;
 pub mod types;
@@ -12,7 +13,7 @@ use crate::types::{Call, Transaction, VmResult};
 use crate::warehouse::Warehouse;
 use alloc::{format, string::ToString, vec, vec::Vec};
 use anyhow::{anyhow, Error};
-use core::fmt::Display;
+use balance::BalanceHandler;
 use move_binary_format::{
     errors::VMResult,
     file_format::StructHandleIndex,
@@ -35,72 +36,34 @@ use move_vm_runtime::move_vm::MoveVM;
 use move_vm_types::loaded_data::runtime_types::{CachedStructIndex, Type};
 use types::{GasHandler, GasStrategy};
 
-/// Represents failures that might occur during native token transaction
-#[derive(Debug)]
-pub enum TransferError {
-    InsuficientBalance,
-    NoSessionTokenPresent,
-}
-
-impl Display for TransferError {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.write_str(format!("{:?}", self).as_str())
-    }
-}
-
-/*
-pub trait SubstrateAPI {
-    /// Callback signature of method to do the transfer between accounts
-    /// # Params
-    /// * `from` - 'AccountAddress' is of a sender;
-    /// * `to` - 'AccountAddress' is of recepient;
-    /// * `amount` - 'u128' is amount to transfer;
-    /// # Returns
-    /// * Result of success or 'TransferError' variant on error.
-    fn transfer(
-        &self,
-        from: AccountAddress,
-        to: AccountAddress,
-        amount: u128,
-    ) -> Result<(), TransferError>;
-    /// Callback to fetch account's balance in Substrate native currency
-    /// # Params
-    /// `of` - 'AccountAddress' of the account in question;
-    /// # Returns 'u128' value of account's balance.
-    fn get_balance(&self, of: AccountAddress) -> u128;
-}
-*/
-
 /// Main MoveVM structure, which is used to represent the virutal machine itself.
-pub struct Mvm<S>
-//, Api>
+pub struct Mvm<S, B>
 where
     S: Storage,
-    //    Api: SubstrateAPI,
+    B: BalanceHandler,
 {
     // MoveVM instance - from move_vm_runtime crate
     vm: MoveVM,
     // Storage instance
-    warehouse: Warehouse<S>, //, Api>,
+    warehouse: Warehouse<S, B>,
 }
 
-impl<S> Mvm<S>
-//, Api>
+impl<S, B> Mvm<S, B>
 where
     S: Storage,
-    //    Api: SubstrateAPI,
+    B: BalanceHandler,
 {
     /// Create a new Move VM with the given storage.
-    pub fn new(storage: S /*, substrate_api: Api*/) -> Result<Mvm<S /*, Api*/>, Error> {
-        Self::new_with_config(storage /*, substrate_api*/)
+    pub fn new(storage: S, balance_handler: B) -> Result<Mvm<S, B>, Error> {
+        Self::new_with_config(storage, balance_handler)
     }
 
     /// Create a new Move VM with the given storage and configuration.
     pub(crate) fn new_with_config(
         storage: S,
-        //        substrate_api: Api,
+        balance_handler: B,
         // config: VMConfig,
-    ) -> Result<Mvm<S> /*, Api>*/, Error> {
+    ) -> Result<Mvm<S, B>, Error> {
         Ok(Mvm {
             // TODO(rqnsom): see if we can avoid GAS_PARAMS cloning
             vm: MoveVM::new(all_natives(CORE_CODE_ADDRESS, NATIVE_COST_PARAMS.clone())).map_err(
@@ -109,7 +72,7 @@ where
                     anyhow!("Error code:{:?}: msg: '{}'", code, msg.unwrap_or_default())
                 },
             )?,
-            warehouse: Warehouse::new(storage /*, substrate_api*/),
+            warehouse: Warehouse::new(storage, balance_handler),
         })
     }
 

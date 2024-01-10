@@ -26,7 +26,23 @@ script {
 }
 
 script {
-    fun execute_transfer(_src: signer, _dst: address, _amount: u128) {
-        // TBD
+    use substrate::balance;
+    use std::signer;
+
+    fun execute_transfer(src: signer, dst: address, amount: u128) {
+        let src_addr = signer::address_of(&src);
+
+        let src_cheque_amount = balance::cheque_amount(src_addr);
+        let dst_cheque_amount = balance::cheque_amount(dst);
+        assert!(src_cheque_amount == amount, 0);
+        assert!(dst_cheque_amount == 0, 0);
+
+        let ret = balance::transfer(&src, dst, amount);
+        assert!(ret, 0);
+
+        let src_cheque_amount = balance::cheque_amount(src_addr);
+        let dst_cheque_amount = balance::cheque_amount(dst);
+        assert!(src_cheque_amount == 0, 0);
+        assert!(dst_cheque_amount == amount, 0);
     }
 }

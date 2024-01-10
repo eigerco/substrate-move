@@ -269,7 +269,7 @@ impl ResourceResolver for RemoteStore {
 }
 
 // This is not supposed to be used in these tests.
-quick_balance_resolver_impl!(RemoteStore, VMError);
+quick_balance_resolver_impl!(RemoteStore, StatusCode);
 
 fn combine_signers_and_args(
     signers: Vec<AccountAddress>,

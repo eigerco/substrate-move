@@ -1,7 +1,4 @@
-use crate::{
-    storage::Storage,
-    //    SubstrateAPI,
-};
+use crate::{balance::BalanceHandler, storage::Storage};
 use alloc::{
     collections::{
         btree_map::Entry::{Occupied, Vacant},
@@ -19,6 +16,7 @@ use move_core_types::effects::{
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::{ModuleId, StructTag};
 use move_core_types::resolver::{BalanceResolver, ModuleResolver, ResourceResolver};
+use move_core_types::vm_status::StatusCode;
 use serde::{Deserialize, Serialize};
 
 /// Structure holding account data which is held under one Move address
@@ -67,17 +65,18 @@ impl AccountData {
 }
 
 /// Move VM storage implementation for Substrate storage.
-pub(crate) struct Warehouse<S: Storage /*, Api: SubstrateAPI*/> {
-    /// Substrate storage implementing the Storage trait
+pub(crate) struct Warehouse<S: Storage, B: BalanceHandler> {
+    /// Substrate storage implementing the Storage trait.
     storage: S,
-    //    substrate_api: Api,
+    /// Balance handler which provides access to the external balance handling mechanism.
+    balance_handler: B,
 }
 
-impl<S: Storage /*, Api: SubstrateAPI*/> Warehouse<S /*, Api*/> {
-    pub(crate) fn new(storage: S /*, substrate_api: Api*/) -> Warehouse<S /*, Api*/> {
+impl<S: Storage, B: BalanceHandler> Warehouse<S, B> {
+    pub(crate) fn new(storage: S, balance_handler: B) -> Warehouse<S, B> {
         Self {
             storage,
-            //            substrate_api,
+            balance_handler,
         }
     }
 
@@ -101,7 +100,7 @@ impl<S: Storage /*, Api: SubstrateAPI*/> Warehouse<S /*, Api*/> {
     }
 }
 
-impl<S: Storage /*, Api: SubstrateAPI*/> Deref for Warehouse<S /*, Api*/> {
+impl<S: Storage, B: BalanceHandler> Deref for Warehouse<S, B> {
     type Target = S;
 
     fn deref(&self) -> &Self::Target {
@@ -109,7 +108,7 @@ impl<S: Storage /*, Api: SubstrateAPI*/> Deref for Warehouse<S /*, Api*/> {
     }
 }
 
-impl<S: Storage /*, Api: SubstrateAPI*/> ModuleResolver for Warehouse<S /*, Api*/> {
+impl<S: Storage, B: BalanceHandler> ModuleResolver for Warehouse<S, B> {
     type Error = Error;
 
     fn get_module(&self, module_id: &ModuleId) -> Result<Option<Vec<u8>>, Self::Error> {
@@ -127,7 +126,7 @@ impl<S: Storage /*, Api: SubstrateAPI*/> ModuleResolver for Warehouse<S /*, Api*
     }
 }
 
-impl<S: Storage /*, Api: SubstrateAPI*/> ResourceResolver for Warehouse<S /*, Api*/> {
+impl<S: Storage, B: BalanceHandler> ResourceResolver for Warehouse<S, B> {
     type Error = Error;
 
     fn get_resource(
@@ -149,26 +148,29 @@ impl<S: Storage /*, Api: SubstrateAPI*/> ResourceResolver for Warehouse<S /*, Ap
     }
 }
 
-impl<S: Storage> BalanceResolver for Warehouse<S> {
-    type Error = Error;
+impl<S: Storage, B: BalanceHandler> BalanceResolver for Warehouse<S, B> {
+    type Error = StatusCode;
 
     fn transfer(
         &self,
-        _src: AccountAddress,
-        _dst: AccountAddress,
-        _cheque_amount: u128,
+        src: AccountAddress,
+        dst: AccountAddress,
+        cheque_amount: u128,
     ) -> Result<bool, Self::Error> {
-        // TODO(rqnsam): ...
-        Ok(true)
+        self.balance_handler
+            .transfer(src, dst, cheque_amount)
+            .map_err(Into::into)
     }
 
-    fn cheque_amount(&self, _account: AccountAddress) -> Result<u128, Self::Error> {
-        // TODO(rqnsam): ...
-        Ok(0)
+    fn cheque_amount(&self, account: AccountAddress) -> Result<u128, Self::Error> {
+        self.balance_handler
+            .cheque_amount(account)
+            .map_err(Into::into)
     }
 
-    fn total_amount(&self, _account: AccountAddress) -> Result<u128, Self::Error> {
-        // TODO(rqnsam): ...
-        Ok(0)
+    fn total_amount(&self, account: AccountAddress) -> Result<u128, Self::Error> {
+        self.balance_handler
+            .total_amount(account)
+            .map_err(Into::into)
     }
 }

@@ -16,6 +16,7 @@ use move_core_types::{
     language_storage::{ModuleId, StructTag},
     quick_balance_resolver_impl,
     resolver::{BalanceResolver, ModuleResolver, MoveResolver, ResourceResolver},
+    vm_status::StatusCode,
 };
 
 #[cfg(feature = "table-extension")]
@@ -55,7 +56,7 @@ impl ResourceResolver for BlankStorage {
 }
 
 // This is not supposed to be used in these tests.
-quick_balance_resolver_impl!(BlankStorage, ());
+quick_balance_resolver_impl!(BlankStorage, StatusCode);
 
 #[cfg(feature = "table-extension")]
 impl TableResolver for BlankStorage {
@@ -350,4 +351,4 @@ impl TableResolver for InMemoryStorage {
 }
 
 // This is not supposed to be used in these tests.
-quick_balance_resolver_impl!(InMemoryStorage, ());
+quick_balance_resolver_impl!(InMemoryStorage, StatusCode);

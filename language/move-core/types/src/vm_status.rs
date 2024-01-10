@@ -687,6 +687,9 @@ pub enum StatusCode {
     RESERVED_RUNTIME_ERROR_4 = 4036,
     RESERVED_RUNTIME_ERROR_5 = 4037,
 
+    // Substrate related codes: 9000-9999
+    INSUFFICIENT_BALANCE = 9000,
+
     // A reserved status to represent an unknown vm status.
     // this is core::u64::MAX, but we can't pattern match on that, so put the hardcoded value in
     UNKNOWN_STATUS = 18446744073709551615,

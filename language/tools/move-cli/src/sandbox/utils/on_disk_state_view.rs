@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{BCS_EXTENSION, DEFAULT_BUILD_DIR, DEFAULT_STORAGE_DIR};
-use anyhow::{anyhow, bail, Error as AnyhowError, Result};
+use anyhow::{anyhow, bail, Result};
 use move_binary_format::{
     access::ModuleAccess,
     binary_views::BinaryIndexedView,
@@ -17,6 +17,7 @@ use move_core_types::{
     language_storage::{ModuleId, StructTag, TypeTag},
     parser, quick_balance_resolver_impl,
     resolver::{BalanceResolver, ModuleResolver, ResourceResolver},
+    vm_status::StatusCode,
 };
 use move_disassembler::disassembler::Disassembler;
 use move_ir_types::location::Spanned;
@@ -420,7 +421,7 @@ impl ResourceResolver for OnDiskStateView {
 }
 
 // This is not supposed to be used in these tests.
-quick_balance_resolver_impl!(OnDiskStateView, AnyhowError);
+quick_balance_resolver_impl!(OnDiskStateView, StatusCode);
 
 impl GetModule for &OnDiskStateView {
     type Error = anyhow::Error;

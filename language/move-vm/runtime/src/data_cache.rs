@@ -312,7 +312,7 @@ impl<'r, 'l, S: MoveResolver> DataStore for TransactionDataCache<'r, 'l, S> {
     ) -> PartialVMResult<bool> {
         self.remote
             .transfer(src, dst, cheque_amount)
-            .map_err(|_| PartialVMError::new(StatusCode::INTERNAL_TYPE_ERROR))
+            .map_err(|e| PartialVMError::new(e.into()))
     }
 
     fn cheque_amount(&self, account: AccountAddress) -> PartialVMResult<u128> {

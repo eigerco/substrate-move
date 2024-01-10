@@ -5,11 +5,13 @@
 //! Some of these tests use addresses that need to match the address in Move project files -
 //! otherwise executing scripts or publishing won't work as expected.
 //!
+use crate::mock::BalanceMock;
 use crate::mock::StorageMock;
 use move_core_types::account_address::AccountAddress;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::StructTag;
 use move_core_types::language_storage::CORE_CODE_ADDRESS as ADDR_STD;
+use move_vm_backend::balance::BalanceHandler;
 use move_vm_backend::genesis::VmGenesisConfig;
 use move_vm_backend::types::GasAmount;
 use move_vm_backend::Mvm;
@@ -76,29 +78,10 @@ fn store_preloaded_with_genesis_cfg() -> StorageMock {
     store
 }
 
-/*
-struct SimpleSubstrateApiMock {}
-
-impl SubstrateAPI for SimpleSubstrateApiMock {
-    fn transfer(
-        &self,
-        _from: AccountAddress,
-        _to: AccountAddress,
-        _amount: u128,
-    ) -> Result<(), TransferError> {
-        Ok(())
-    }
-
-    fn get_balance(&self, _of: AccountAddress) -> u128 {
-        1
-    }
-}
-*/
-
 #[test]
 fn publish_module_test() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
 
     let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let module = read_module_bytes_from_project("empty", "Empty");
@@ -120,7 +103,7 @@ fn publish_module_test() {
     // Prove that publishing will fail with insufficient gas.
     {
         let store = StorageMock::new();
-        let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+        let vm = Mvm::new(store, BalanceMock::new()).unwrap();
         let gas = GasStrategy::Metered(GasAmount::new(estimated_gas).unwrap());
         let result = vm.publish_module(&module, address, gas);
         assert!(result.is_ok(), "failed to publish the module");
@@ -129,7 +112,7 @@ fn publish_module_test() {
     // Prove that publishing will succeeded with the exact amount of gas.
     {
         let store = StorageMock::new();
-        let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+        let vm = Mvm::new(store, BalanceMock::new()).unwrap();
         let gas = GasStrategy::Metered(GasAmount::new(estimated_gas - 1).unwrap());
         let result = vm.publish_module(&module, address, gas);
         assert!(result.is_err(), "failed to publish the module");
@@ -139,7 +122,7 @@ fn publish_module_test() {
 #[test]
 fn publish_module_bundle_from_multiple_module_files() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
     let gas = GasStrategy::Unmetered;
 
     let module_1 = read_module_bytes_from_project("using_stdlib_natives", "Vector");
@@ -155,7 +138,7 @@ fn publish_module_bundle_from_multiple_module_files() {
 
     // Recreate the storage and the MoveVM
     let store = StorageMock::new();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
     // Order matters - we cannot publish module_2 before module_1!
     let modules = ModuleBundle::new(vec![module_2, module_1])
         .encode()
@@ -170,7 +153,7 @@ fn publish_module_bundle_from_multiple_module_files() {
 #[test]
 fn publish_module_bundle_from_bundle_file() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
     let provided_gas_amount = GasAmount::max();
     let gas = GasStrategy::Metered(provided_gas_amount);
 
@@ -191,7 +174,7 @@ fn publish_module_bundle_from_bundle_file() {
 #[test]
 fn publish_module_dependent_on_stdlib_natives() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
     let gas = GasStrategy::Unmetered;
 
     let mod_using_stdlib_natives = read_module_bytes_from_project("using_stdlib_natives", "Vector");
@@ -216,7 +199,7 @@ fn publish_module_dependent_on_stdlib_natives() {
 #[test]
 fn publish_module_using_stdlib_full_fails() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
     let gas = GasStrategy::Unmetered;
 
     let mod_using_stdlib_natives =
@@ -233,7 +216,7 @@ fn publish_module_using_stdlib_full_fails() {
 fn genesis_config_inits_stdlib_so_stdlib_full_can_be_published() {
     let store = store_preloaded_with_genesis_cfg();
 
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
 
     let module = read_module_bytes_from_project("using_stdlib_full", "StringAndVector");
     let address = AccountAddress::from_hex_literal("0x3").unwrap();
@@ -246,7 +229,7 @@ fn genesis_config_inits_stdlib_so_stdlib_full_can_be_published() {
 #[test]
 fn get_module_and_module_abi() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
 
     let module = read_module_bytes_from_project("using_stdlib_natives", "Vector");
     let address = AccountAddress::from_hex_literal("0x2").unwrap();
@@ -278,7 +261,7 @@ fn get_resource() {
         "failed to apply the genesis configuration"
     );
 
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
 
     let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let module = read_module_bytes_from_project("basic_coin", "BasicCoin");
@@ -327,7 +310,7 @@ fn get_resource() {
 #[test]
 fn execute_script_with_no_params_test() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
 
     let script = read_script_bytes_from_project("simple_scripts", "empty_loop");
 
@@ -344,7 +327,7 @@ fn execute_script_with_no_params_test() {
 #[test]
 fn execute_script_params_test() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
 
     let script = read_script_bytes_from_project("simple_scripts", "empty_loop_param");
 
@@ -362,7 +345,7 @@ fn execute_script_params_test() {
 #[test]
 fn execute_script_generics_test() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
 
     let script = read_script_bytes_from_project("simple_scripts", "generic_1");
 
@@ -389,7 +372,7 @@ fn execute_script_generics_test() {
 #[test]
 fn execute_script_generics_incorrect_params_test() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
 
     let script = read_script_bytes_from_project("simple_scripts", "generic_1");
 
@@ -426,7 +409,7 @@ fn execute_function_test() {
         "failed to apply the genesis configuration"
     );
 
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
 
     let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let module = read_module_bytes_from_project("basic_coin", "BasicCoin");
@@ -448,7 +431,7 @@ fn execute_function_test() {
 #[test]
 fn publishing_fails_with_insufficient_gas() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
 
     // Try to publish a bundle
     {
@@ -481,7 +464,7 @@ fn publishing_fails_with_insufficient_gas() {
 #[test]
 fn script_execution_fails_with_insufficient_gas() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
     let gas = GasStrategy::Unmetered;
 
     let stdlib = move_stdlib::move_stdlib_bundle();
@@ -513,7 +496,7 @@ fn script_execution_fails_with_insufficient_gas() {
 #[test]
 fn dry_run_gas_strategy_doesnt_update_storage() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
 
     let module = read_module_bytes_from_project("using_stdlib_natives", "Vector");
     let address = AccountAddress::from_hex_literal("0x2").unwrap();
@@ -536,7 +519,7 @@ fn dry_run_gas_strategy_doesnt_update_storage() {
 #[test]
 fn manually_publish_substrate_stdlib_bundle() {
     let store = StorageMock::new();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
     let gas = GasStrategy::Unmetered;
 
     let stdlib = move_stdlib::substrate_stdlib_bundle();
@@ -547,7 +530,7 @@ fn manually_publish_substrate_stdlib_bundle() {
 #[test]
 fn run_scipt_that_simply_tests_balance_api() {
     let store = store_preloaded_with_genesis_cfg();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
     let gas = GasStrategy::Unmetered;
 
     let script = read_script_bytes_from_project("substrate_balance", "balance_simple_api_test");
@@ -555,7 +538,7 @@ fn run_scipt_that_simply_tests_balance_api() {
     let src = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let dst = AccountAddress::from_hex_literal("0x3EEE").unwrap();
 
-    let amount = bcs::to_bytes(&10u128).unwrap();
+    let amount = bcs::to_bytes(&0u128).unwrap();
     let src_addr = bcs::to_bytes(&src).unwrap();
     let dst_addr = bcs::to_bytes(&dst).unwrap();
     let params: Vec<&[u8]> = vec![&src_addr, &dst_addr, &amount];
@@ -569,7 +552,8 @@ fn run_scipt_that_simply_tests_balance_api() {
 #[test]
 fn execute_transfer_script_and_check_balance_updates() {
     let store = store_preloaded_with_genesis_cfg();
-    let vm = Mvm::new(store /*, SimpleSubstrateApiMock {}*/).unwrap();
+    let mut balance = BalanceMock::new();
+    let vm = Mvm::new(store, balance.clone()).unwrap();
     let gas = GasStrategy::Unmetered;
 
     let script = read_script_bytes_from_project("substrate_balance", "execute_transfer");
@@ -577,16 +561,28 @@ fn execute_transfer_script_and_check_balance_updates() {
     let src = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let dst = AccountAddress::from_hex_literal("0x3EEE").unwrap();
 
-    let amount = bcs::to_bytes(&10u128).unwrap();
+    let amount = 10;
+    balance.write_cheque(src, amount);
+
+    // pre-transfer balance state
+    assert_eq!(balance.cheque_amount(src).unwrap(), amount);
+    assert_eq!(balance.cheque_amount(dst).unwrap(), 0);
+
+    let amount_param = bcs::to_bytes(&amount).unwrap();
     let src_addr = bcs::to_bytes(&src).unwrap();
     let dst_addr = bcs::to_bytes(&dst).unwrap();
-    let params: Vec<&[u8]> = vec![&src_addr, &dst_addr, &amount];
+    let params: Vec<&[u8]> = vec![&src_addr, &dst_addr, &amount_param];
 
+    // execute the transfer script
     let type_args: Vec<TypeTag> = vec![];
-
-    let result = vm.execute_script(&script, type_args, params, gas);
-
-    // TODO(rqnsom): add a test for the cheque logic here.
-
+    let result = vm.execute_script(&script, type_args.clone(), params.clone(), gas);
     assert!(result.is_ok(), "failed to execute the script");
+
+    // post-transfer balance state
+    assert_eq!(balance.cheque_amount(src).unwrap(), 0);
+    assert_eq!(balance.cheque_amount(dst).unwrap(), amount);
+
+    // trying to re-run the script will fail since the cheque has been spent already
+    let result = vm.execute_script(&script, type_args, params, gas);
+    assert!(!result.is_ok(), "managed to execute the script");
 }

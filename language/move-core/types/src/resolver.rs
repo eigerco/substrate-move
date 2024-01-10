@@ -5,6 +5,7 @@
 use crate::{
     account_address::AccountAddress,
     language_storage::{ModuleId, StructTag},
+    vm_status::StatusCode,
 };
 use alloc::vec::Vec;
 use core::fmt::Debug;
@@ -47,7 +48,7 @@ pub trait ResourceResolver {
 
 /// A balance backend that can resolve balance handling.
 pub trait BalanceResolver {
-    type Error: Debug;
+    type Error: Into<StatusCode>;
 
     /// Resolver should update the inner state for the external balance handler.
     ///
@@ -80,20 +81,23 @@ pub trait BalanceResolver {
 pub trait MoveResolver:
     ModuleResolver<Error = Self::Err>
     + ResourceResolver<Error = Self::Err>
-    + BalanceResolver<Error = Self::Err>
+    + BalanceResolver<Error = Self::StatusCodeErr>
 {
     type Err: Debug;
+    type StatusCodeErr: Into<StatusCode>;
 }
 
 impl<
         E: Debug,
+        S: Into<StatusCode>,
         T: ModuleResolver<Error = E>
             + ResourceResolver<Error = E>
-            + BalanceResolver<Error = E>
+            + BalanceResolver<Error = S>
             + ?Sized,
     > MoveResolver for T
 {
     type Err = E;
+    type StatusCodeErr = S;
 }
 
 impl<T: ResourceResolver + ?Sized> ResourceResolver for &T {
