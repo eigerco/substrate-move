@@ -37,4 +37,5 @@ std = [
     "move-vm-runtime/std",
     "move-vm-types/std",
     "move-vm-backend-common/std",
+    "num-integer/std",
 ]

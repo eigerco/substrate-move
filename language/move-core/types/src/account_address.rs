@@ -7,10 +7,12 @@ use alloc::string::ToString;
 use alloc::vec::Vec;
 use core::{convert::TryFrom, fmt, result, str::FromStr};
 use hex::FromHex;
+use parity_scale_codec::{Decode, Encode};
+use scale_info::TypeInfo;
 use serde::{de::Error as _, Deserialize, Deserializer, Serialize, Serializer};
 
 /// A struct that represents an account address.
-#[derive(Ord, PartialOrd, Eq, PartialEq, Hash, Clone, Copy)]
+#[derive(Ord, PartialOrd, Eq, PartialEq, Hash, Clone, Copy, TypeInfo, Encode, Decode)]
 #[cfg_attr(any(test, feature = "fuzzing"), derive(proptest_derive::Arbitrary))]
 #[cfg_attr(any(test, feature = "fuzzing"), derive(arbitrary::Arbitrary))]
 pub struct AccountAddress([u8; AccountAddress::LENGTH]);
