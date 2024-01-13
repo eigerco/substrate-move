@@ -523,7 +523,7 @@ impl UseDef {
 
         references
             .entry(def_loc)
-            .or_insert_with(BTreeSet::new)
+            .or_default()
             .insert(use_loc);
         Self {
             col_start: use_start.character,
@@ -560,7 +560,7 @@ impl UseDefMap {
     }
 
     fn insert(&mut self, key: u32, val: UseDef) {
-        self.0.entry(key).or_insert_with(BTreeSet::new).insert(val);
+        self.0.entry(key).or_default().insert(val);
     }
 
     fn get(&self, key: u32) -> Option<BTreeSet<UseDef>> {
@@ -595,7 +595,7 @@ impl Symbols {
         for (k, v) in other.references {
             self.references
                 .entry(k)
-                .or_insert_with(BTreeSet::new)
+                .or_default()
                 .extend(v);
         }
         self.file_use_defs.extend(other.file_use_defs);

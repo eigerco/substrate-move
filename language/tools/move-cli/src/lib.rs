@@ -125,10 +125,10 @@ pub fn run_cli(
             natives,
             cost_table,
             error_descriptions,
-            &move_args,
+            move_args,
             &storage_dir,
         ),
-        Command::Experimental { storage_dir, cmd } => cmd.handle_command(&move_args, &storage_dir),
+        Command::Experimental { storage_dir, cmd } => cmd.handle_command(move_args, &storage_dir),
     }
 }
 
