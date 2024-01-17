@@ -263,48 +263,82 @@ fn get_resource() {
 
     let vm = Mvm::new(store, BalanceMock::new()).unwrap();
 
-    let address = AccountAddress::from_hex_literal("0xCAFE").unwrap();
+    // Publish a module that can create resources.
+    let cafe = AccountAddress::from_hex_literal("0xCAFE").unwrap();
     let module = read_module_bytes_from_project("basic_coin", "BasicCoin");
-    let result = vm.publish_module(&module, address, gas);
-
+    let result = vm.publish_module(&module, cafe, gas);
     assert!(result.is_ok(), "failed to publish the module");
 
-    let script = read_script_bytes_from_project("basic_coin", "main");
-    let addr_param = bcs::to_bytes(&address).unwrap();
-    let type_args: Vec<TypeTag> = vec![];
-    let params: Vec<&[u8]> = vec![&addr_param];
-    let result = vm.execute_script(&script, type_args, params, gas);
-
-    assert!(result.is_ok(), "script execution failed");
-
-    let tag = StructTag {
-        address,
-        module: Identifier::new("BasicCoin").unwrap(),
-        name: Identifier::new("Balance").unwrap(),
-        type_params: vec![],
+    let publish_basic_coin_for = |who| {
+        let script = read_script_bytes_from_project("basic_coin", "publish_balance");
+        let addr_param = bcs::to_bytes(&who).unwrap();
+        let type_args: Vec<TypeTag> = vec![];
+        let params: Vec<&[u8]> = vec![&addr_param];
+        let result = vm.execute_script(&script, type_args, params, gas);
+        assert!(result.is_ok(), "script execution failed for {who}");
     };
-    // Check if the resource exists and is published on our address
-    let result = vm.get_resource(&address, &bcs::to_bytes(&tag).unwrap());
 
-    // Check if the resource exists
-    assert!(
-        result.unwrap().is_some(),
-        "resource not found in the module"
+    let bob = AccountAddress::from_hex_literal("0xB0B").unwrap();
+    publish_basic_coin_for(cafe);
+    publish_basic_coin_for(bob);
+
+    let get_basic_coin_resource_for = |who, module| {
+        let tag = StructTag {
+            address: module,
+            module: Identifier::new("BasicCoin").unwrap(),
+            name: Identifier::new("Balance").unwrap(),
+            type_params: vec![],
+        };
+        // Check if the resource exists and is published on our address.
+        vm.get_resource(&who, &bcs::to_bytes(&tag).unwrap())
+            .unwrap()
+    };
+
+    // Make sure the resource can be published for different addresses.
+    let cafe_resource = get_basic_coin_resource_for(cafe, cafe).expect("resource not found");
+    let bob_resource = get_basic_coin_resource_for(bob, cafe).expect("resource not found");
+    assert_eq!(
+        bob_resource, cafe_resource,
+        "failure: the amount of coins should be the same"
     );
 
+    let mint_coins_to = |who, amount: u64| {
+        let script = read_script_bytes_from_project("basic_coin", "mint_some");
+
+        // We don't need to encapsulate it in Move::Signer token, since once serialized it shall
+        // have the same 32-byte format.
+        let module_owner_signer = bcs::to_bytes(&cafe).unwrap();
+        let addr_param = bcs::to_bytes(&who).unwrap();
+        let amount = bcs::to_bytes(&amount).unwrap();
+
+        let type_args: Vec<TypeTag> = vec![];
+        let params: Vec<&[u8]> = vec![&module_owner_signer, &addr_param, &amount];
+        let result = vm.execute_script(&script, type_args, params, gas);
+        assert!(result.is_ok(), "script execution failed for {who}");
+    };
+
+    mint_coins_to(cafe, 99999); // Cafe: I'm the main guy here!
+    mint_coins_to(bob, 5); // Cafe: I dunno why you want my tokens, but here's some.
+
+    let cafe_resource = get_basic_coin_resource_for(cafe, cafe).expect("resource not found");
+    let bob_resource = get_basic_coin_resource_for(bob, cafe).expect("resource not found");
+    assert_ne!(
+        bob_resource, cafe_resource,
+        "failure: the amount of coins shouldn't be the same"
+    );
+
+    // ---- an extra test case here ----
+    // Make sure the non-existing resource actually doesn't exist.
     let tag = StructTag {
-        address,
+        address: cafe,
         module: Identifier::new("BasicCoin").unwrap(),
         name: Identifier::new("NonExisting").unwrap(),
         type_params: vec![],
     };
-    let result = vm.get_resource(&address, &bcs::to_bytes(&tag).unwrap());
+    let result = vm.get_resource(&cafe, &bcs::to_bytes(&tag).unwrap());
 
     // Check if the resource does not exist
-    assert!(
-        result.unwrap().is_none(),
-        "resource found in the module (but it shouldn't)"
-    );
+    assert!(result.unwrap().is_none(), "resource found in the module");
 }
 
 #[test]
