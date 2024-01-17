@@ -1,9 +1,9 @@
 /// This module defines a minimal Coin and Balance.
-module TestAccount::BasicCoin {
+module CafeAccount::BasicCoin {
     use std::signer;
 
     /// Address of the owner of this module
-    const MODULE_OWNER: address = @TestAccount;
+    const MODULE_OWNER: address = @CafeAccount;
 
     /// Error codes
     const ENOT_MODULE_OWNER: u64 = 0;

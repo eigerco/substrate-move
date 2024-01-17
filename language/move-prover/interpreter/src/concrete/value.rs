@@ -1199,11 +1199,7 @@ impl GlobalState {
 
     /// Emit an event to the event store
     pub fn emit_event(&mut self, guid: Vec<u8>, seq: u64, msg: TypedValue) {
-        let res = self
-            .events
-            .entry(guid)
-            .or_default()
-            .insert(seq, msg);
+        let res = self.events.entry(guid).or_default().insert(seq, msg);
         if cfg!(debug_assertions) {
             assert!(res.is_none());
         }
