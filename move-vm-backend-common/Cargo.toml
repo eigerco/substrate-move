@@ -16,6 +16,7 @@ move-core-types = { path = "../language/move-core/types", default-features = fal
 move-stdlib = { path = "../language/move-stdlib", default-features = false, features = ["address32"] }
 move-vm-test-utils = { path = "../language/move-vm/test-utils", default-features = false }
 move-vm-types = { path = "../language/move-vm/types", default-features = false }
+move-vm-runtime = { path = "../language/move-vm/runtime", default-features = false }
 parity-scale-codec = { version = "3.6", default-features = false, features = ["derive"] }
 scale-info = { version = "2.10", default-features = false, features = ["derive"] }
 serde = { version = "1.0", default-features = false, features = ["derive"] }
@@ -25,6 +26,9 @@ serde_bytes = { version = "0.11", default-features = false, features = ["alloc"]
 default = ["std", "gas_schedule"]
 gas_schedule = []
 testing = []
+
+# Builds move projects for test purposes.
+build-move-projects-for-test = []
 
 std = [
     "anyhow/std",

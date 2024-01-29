@@ -31,3 +31,6 @@ jobs:
 
       - name: Run move-vm-backend tests
         run: cargo test -p move-vm-backend --features build-move-projects-for-test
+
+      - name: Run move-vm-backend-common tests
+        run: cargo test -p move-vm-backend-common --features build-move-projects-for-test

@@ -43,7 +43,7 @@ pub struct ScriptTransaction {
     pub bytecode: Vec<u8>,
     /// All script arguments that are fed to the MoveVM.
     ///
-    /// Signers in this list are represented with their address - and are actually signed by the
+    /// Signers in this list are represented by their address - and are actually signed by the
     /// account that executes the extrinsic in the pallet layer.
     pub args: Vec<Vec<u8>>,
     /// Script type arguments.

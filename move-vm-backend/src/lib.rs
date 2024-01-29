@@ -11,15 +11,10 @@ mod warehouse;
 use crate::storage::Storage;
 use crate::types::{Call, Transaction, VmResult};
 use crate::warehouse::Warehouse;
-use alloc::{format, string::ToString, vec, vec::Vec};
+use alloc::{format, string::ToString, vec::Vec};
 use anyhow::{anyhow, Error};
 use balance::BalanceHandler;
-use move_binary_format::{
-    errors::VMResult,
-    file_format::StructHandleIndex,
-    // re-export for param verification
-    file_format::{CompiledModule, SignatureToken},
-};
+use move_binary_format::{errors::VMResult, file_format::CompiledModule};
 use move_core_types::{
     account_address::AccountAddress,
     effects::{ChangeSet, Event},
@@ -33,7 +28,6 @@ use move_vm_backend_common::{
     abi::ModuleAbi, gas_schedule::NATIVE_COST_PARAMS, types::ModuleBundle,
 };
 use move_vm_runtime::move_vm::MoveVM;
-use move_vm_types::loaded_data::runtime_types::{CachedStructIndex, Type};
 use types::{GasHandler, GasStrategy};
 
 /// Main MoveVM structure, which is used to represent the virutal machine itself.
@@ -258,44 +252,6 @@ where
                 let (status_code, _, msg, _, _, _, _) = err.all_data();
                 VmResult::new(status_code, msg.clone(), 0)
             }
-        }
-    }
-
-    pub fn get_struct_members(&self, idx: StructHandleIndex) -> Vec<SignatureToken> {
-        let sess = self.vm.new_session(&self.warehouse);
-        let Some(s) = sess.get_struct_type(CachedStructIndex(idx.0.into())) else {
-            return vec![]; // no struct loaded
-        };
-        s.fields
-            .clone()
-            .into_iter()
-            .map(Self::type_to_token)
-            .collect()
-    }
-
-    // WARN: non-reverse for matching purposes only!
-    fn type_to_token(type_s: Type) -> SignatureToken {
-        match type_s {
-            Type::Signer => SignatureToken::Signer,
-            Type::Address => SignatureToken::Address,
-            Type::Bool => SignatureToken::Bool,
-            Type::U8 => SignatureToken::U8,
-            Type::U16 => SignatureToken::U16,
-            Type::U32 => SignatureToken::U32,
-            Type::U64 => SignatureToken::U64,
-            Type::U128 => SignatureToken::U128,
-            Type::U256 => SignatureToken::U256,
-            Type::Struct(csi) => {
-                SignatureToken::Struct(StructHandleIndex(csi.0.try_into().unwrap_or_default()))
-            }
-            Type::StructInstantiation(csi, types) => SignatureToken::StructInstantiation(
-                StructHandleIndex(csi.0.try_into().unwrap_or_default()),
-                types.into_iter().map(Self::type_to_token).collect(),
-            ),
-            Type::Vector(v) => Self::type_to_token(*v),
-            Type::Reference(r) => Self::type_to_token(*r),
-            Type::MutableReference(m) => Self::type_to_token(*m),
-            Type::TyParam(p) => SignatureToken::TypeParameter(p),
         }
     }
 }

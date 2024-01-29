@@ -4029,6 +4029,7 @@ dependencies = [
  "move-binary-format",
  "move-core-types",
  "move-stdlib",
+ "move-vm-runtime",
  "move-vm-test-utils",
  "move-vm-types",
  "parity-scale-codec 3.6.9",
