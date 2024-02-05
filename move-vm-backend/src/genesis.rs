@@ -71,7 +71,7 @@ impl VmGenesisConfig {
 
         let publish_under_stdaddr = |bundle: &[u8]| {
             let result =
-                vm.publish_module_bundle(&bundle, CORE_CODE_ADDRESS, GasStrategy::Unmetered);
+                vm.publish_module_bundle(bundle, CORE_CODE_ADDRESS, GasStrategy::Unmetered);
 
             if !result.is_ok() {
                 return Err(GenesisConfigError::PublishBundle(result));

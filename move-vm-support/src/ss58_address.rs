@@ -193,7 +193,7 @@ mod tests {
     #[should_panic]
     fn move_address_to_ss58_string_fail() {
         let move_address = "0x8EAF04151687736326C9FEA17E25FC5287613693C912909CB226AA4794F26A48AA"; // too long
-        let substrate_address =
+        let _substrate_addr =
             move_address_to_ss58_string(&AccountAddress::from_hex_literal(move_address).unwrap());
     }
 }
