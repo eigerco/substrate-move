@@ -37,6 +37,10 @@ cargo test -p move-vm-support # helper crate for interaction with language direc
 ```
 _Note: the feature flag `build-move-projects-for-test` needs to be provided only once in order to build all the necessary `move-vm-backend/tests/assets/move-projects/` projects for test purposes (with the `smove-build-all.sh` script). Also, the feature flag needs to be provided whenever any of those Move projects are modified._
 
+## Open / Planned Points
+- clean clippy warnings for the latest rustc compiler
+- improve get_resource API (input params and the output value)
+
 ## License
 
 Move is licensed as [Apache 2.0](https://github.com/move-language/move/blob/main/LICENSE).
