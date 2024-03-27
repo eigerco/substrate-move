@@ -12,7 +12,7 @@ use std::fmt;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Tok {
-    EOF,
+    Eof,
     NumValue,
     NumTypedValue,
     ByteStringValue,
@@ -86,7 +86,7 @@ impl fmt::Display for Tok {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         use Tok::*;
         let s = match *self {
-            EOF => "[end-of-file]",
+            Eof => "[end-of-file]",
             NumValue => "[Num]",
             NumTypedValue => "[NumTyped]",
             ByteStringValue => "[ByteString]",
@@ -180,7 +180,7 @@ impl<'input> Lexer<'input> {
             prev_end: 0,
             cur_start: 0,
             cur_end: 0,
-            token: Tok::EOF,
+            token: Tok::Eof,
         }
     }
 
@@ -416,16 +416,16 @@ fn find_token(
     let c: char = match text.chars().next() {
         Some(next_char) => next_char,
         None => {
-            return Ok((Tok::EOF, 0));
+            return Ok((Tok::Eof, 0));
         }
     };
     if matches!(c, 'A'..='Z' | 'a'..='z' | '1'..='9') {
         // check for correct base58
         let ss58_text_len = text
             .find(|c| !matches!(c, 'A'..='Z' | 'a'..='z' | '1'..='9'))
-            .unwrap_or_else(|| text.len());
+            .unwrap_or(text.len());
         let ss58_candidate = &text[..ss58_text_len];
-        if let Ok(_) = move_vm_support::ss58_address::ss58_to_move_address(ss58_candidate) {
+        if move_vm_support::ss58_address::ss58_to_move_address(ss58_candidate).is_ok() {
             return Ok((Tok::NumValue, ss58_text_len));
         }
     }

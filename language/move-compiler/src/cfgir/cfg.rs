@@ -22,7 +22,7 @@ use std::{
 // CFG
 //**************************************************************************************************
 
-pub trait CFG {
+pub trait Cfg {
     fn successors(&self, label: Label) -> &BTreeSet<Label>;
 
     fn predecessors(&self, label: Label) -> &BTreeSet<Label>;
@@ -194,7 +194,7 @@ impl<'a> BlockCFG<'a> {
     }
 }
 
-impl<'a> CFG for BlockCFG<'a> {
+impl<'a> Cfg for BlockCFG<'a> {
     fn successors(&self, label: Label) -> &BTreeSet<Label> {
         self.successor_map.get(&label).unwrap()
     }
@@ -549,7 +549,7 @@ impl<'a> ReverseBlockCFG<'a> {
         for terminal_predecessor in &end_blocks {
             forward_successors
                 .entry(*terminal_predecessor)
-                .or_insert_with(BTreeSet::new)
+                .or_default()
                 .insert(terminal);
         }
         forward_predecessor.insert(terminal, end_blocks);
@@ -623,7 +623,7 @@ impl<'a> Drop for ReverseBlockCFG<'a> {
     }
 }
 
-impl<'a> CFG for ReverseBlockCFG<'a> {
+impl<'a> Cfg for ReverseBlockCFG<'a> {
     fn successors(&self, label: Label) -> &BTreeSet<Label> {
         self.successor_map.get(&label).unwrap()
     }

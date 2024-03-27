@@ -1482,7 +1482,7 @@ fn parse_acquire_list(
     Ok(al)
 }
 
-//// Spec language parsing ////
+// Spec language parsing //
 
 // parses Name '.' Name and returns pair of strings.
 fn spec_parse_dot_name(
@@ -2209,7 +2209,7 @@ pub fn parse_module_string(
     let mut tokens = Lexer::new(file_hash, input);
     tokens.advance()?;
     let unit = parse_module(&mut tokens)?;
-    consume_token(&mut tokens, Tok::EOF)?;
+    consume_token(&mut tokens, Tok::Eof)?;
     Ok(unit)
 }
 
@@ -2218,7 +2218,7 @@ pub fn parse_script_string(input: &str) -> Result<Script, ParseError<Loc, anyhow
     let mut tokens = Lexer::new(file_hash, input);
     tokens.advance()?;
     let unit = parse_script(&mut tokens)?;
-    consume_token(&mut tokens, Tok::EOF)?;
+    consume_token(&mut tokens, Tok::Eof)?;
     Ok(unit)
 }
 
@@ -2229,6 +2229,6 @@ pub fn parse_script_or_module_string(
     let mut tokens = Lexer::new(file_hash, input);
     tokens.advance()?;
     let unit = parse_script_or_module(&mut tokens)?;
-    consume_token(&mut tokens, Tok::EOF)?;
+    consume_token(&mut tokens, Tok::Eof)?;
     Ok(unit)
 }

@@ -34,7 +34,7 @@ impl<'env, 'lexer, 'input> Context<'env, 'lexer, 'input> {
 //**************************************************************************************************
 
 fn current_token_error_string(tokens: &Lexer) -> String {
-    if tokens.peek() == Tok::EOF {
+    if tokens.peek() == Tok::Eof {
         "end-of-file".to_string()
     } else {
         format!("'{}'", tokens.content())
@@ -3206,7 +3206,7 @@ fn singleton_module_spec_block(
 //          (<Attributes> (<AddressBlock> | <Module> | <Script>))*
 fn parse_file(context: &mut Context) -> Result<Vec<Definition>, Box<Diagnostic>> {
     let mut defs = vec![];
-    while context.tokens.peek() != Tok::EOF {
+    while context.tokens.peek() != Tok::Eof {
         let attributes = parse_attributes(context)?;
         defs.push(match context.tokens.peek() {
             Tok::Spec | Tok::Module => Definition::Module(parse_module(attributes, context)?),
