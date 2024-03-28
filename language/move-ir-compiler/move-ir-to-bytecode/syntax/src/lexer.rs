@@ -8,7 +8,7 @@ use move_ir_types::location::*;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Tok {
-    EOF,
+    Eof,
     AccountAddressValue,
     U8Value,
     U16Value,
@@ -146,7 +146,7 @@ impl<'input> Lexer<'input> {
             prev_end: 0,
             cur_start: 0,
             cur_end: 0,
-            token: Tok::EOF,
+            token: Tok::Eof,
         }
     }
 
@@ -224,7 +224,7 @@ impl<'input> Lexer<'input> {
         let c: char = match text.chars().next() {
             Some(next_char) => next_char,
             None => {
-                return Ok((Tok::EOF, 0));
+                return Ok((Tok::Eof, 0));
             }
         };
         let (tok, len) = match c {
@@ -403,7 +403,7 @@ impl<'input> Lexer<'input> {
 fn get_name_len(text: &str) -> usize {
     // If the first character is 0..=9 or EOF, then return a length of 0.
     let first_char = text.chars().next().unwrap_or('0');
-    if ('0'..='9').contains(&first_char) {
+    if first_char.is_ascii_digit() {
         return 0;
     }
     text.chars()

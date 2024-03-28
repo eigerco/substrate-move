@@ -43,6 +43,10 @@ impl<R: ModuleResolver> ModuleCache<R> {
     pub fn len(&self) -> usize {
         self.cache.borrow().len()
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.cache.borrow().is_empty()
+    }
 }
 
 impl<R: ModuleResolver> GetModule for ModuleCache<R> {
@@ -87,6 +91,10 @@ impl<R: ModuleResolver> SyncModuleCache<R> {
 
     pub fn len(&self) -> usize {
         self.cache.read().unwrap().len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.cache.read().unwrap().is_empty()
     }
 }
 

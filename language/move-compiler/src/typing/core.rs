@@ -22,17 +22,17 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 //**************************************************************************************************
 
 pub enum Constraint {
-    AbilityConstraint {
+    Ability {
         loc: Loc,
         msg: Option<String>,
         ty: Type,
         constraints: AbilitySet,
     },
-    NumericConstraint(Loc, &'static str, Type),
-    BitsConstraint(Loc, &'static str, Type),
-    OrderedConstraint(Loc, &'static str, Type),
-    BaseTypeConstraint(Loc, String, Type),
-    SingleTypeConstraint(Loc, String, Type),
+    Numeric(Loc, &'static str, Type),
+    Bits(Loc, &'static str, Type),
+    Ordered(Loc, &'static str, Type),
+    BaseType(Loc, String, Type),
+    SingleType(Loc, String, Type),
 }
 pub type Constraints = Vec<Constraint>;
 pub type TParamSubst = HashMap<TParamID, Type>;
@@ -177,7 +177,7 @@ impl<'env> Context<'env> {
         ty: Type,
         constraints: AbilitySet,
     ) {
-        self.constraints.push(Constraint::AbilityConstraint {
+        self.constraints.push(Constraint::Ability {
             loc,
             msg: msg_opt.map(|s| s.into()),
             ty,
@@ -187,27 +187,24 @@ impl<'env> Context<'env> {
 
     pub fn add_base_type_constraint(&mut self, loc: Loc, msg: impl Into<String>, t: Type) {
         self.constraints
-            .push(Constraint::BaseTypeConstraint(loc, msg.into(), t))
+            .push(Constraint::BaseType(loc, msg.into(), t))
     }
 
     pub fn add_single_type_constraint(&mut self, loc: Loc, msg: impl Into<String>, t: Type) {
         self.constraints
-            .push(Constraint::SingleTypeConstraint(loc, msg.into(), t))
+            .push(Constraint::SingleType(loc, msg.into(), t))
     }
 
     pub fn add_numeric_constraint(&mut self, loc: Loc, op: &'static str, t: Type) {
-        self.constraints
-            .push(Constraint::NumericConstraint(loc, op, t))
+        self.constraints.push(Constraint::Numeric(loc, op, t))
     }
 
     pub fn add_bits_constraint(&mut self, loc: Loc, op: &'static str, t: Type) {
-        self.constraints
-            .push(Constraint::BitsConstraint(loc, op, t))
+        self.constraints.push(Constraint::Bits(loc, op, t))
     }
 
     pub fn add_ordered_constraint(&mut self, loc: Loc, op: &'static str, t: Type) {
-        self.constraints
-            .push(Constraint::OrderedConstraint(loc, op, t))
+        self.constraints.push(Constraint::Ordered(loc, op, t))
     }
 
     pub fn declare_local(&mut self, var: Var, ty_opt: Option<Type>) {
@@ -859,25 +856,23 @@ pub fn solve_constraints(context: &mut Context) {
     let constraints = std::mem::take(&mut context.constraints);
     for constraint in constraints {
         match constraint {
-            Constraint::AbilityConstraint {
+            Constraint::Ability {
                 loc,
                 msg,
                 ty,
                 constraints,
             } => solve_ability_constraint(context, loc, msg, ty, constraints),
-            Constraint::NumericConstraint(loc, op, t) => {
+            Constraint::Numeric(loc, op, t) => {
                 solve_builtin_type_constraint(context, BT::numeric(), loc, op, t)
             }
-            Constraint::BitsConstraint(loc, op, t) => {
+            Constraint::Bits(loc, op, t) => {
                 solve_builtin_type_constraint(context, BT::bits(), loc, op, t)
             }
-            Constraint::OrderedConstraint(loc, op, t) => {
+            Constraint::Ordered(loc, op, t) => {
                 solve_builtin_type_constraint(context, BT::ordered(), loc, op, t)
             }
-            Constraint::BaseTypeConstraint(loc, msg, t) => {
-                solve_base_type_constraint(context, loc, msg, &t)
-            }
-            Constraint::SingleTypeConstraint(loc, msg, t) => {
+            Constraint::BaseType(loc, msg, t) => solve_base_type_constraint(context, loc, msg, &t),
+            Constraint::SingleType(loc, msg, t) => {
                 solve_single_type_constraint(context, loc, msg, &t)
             }
         }

@@ -5,7 +5,7 @@
 use crate::{
     cfgir::{
         ast::remap_labels,
-        cfg::{BlockCFG, CFG},
+        cfg::{BlockCFG, Cfg},
     },
     hlir::ast::{BasicBlocks, Command_, FunctionSignature, Label, SingleType},
     parser::ast::Var,

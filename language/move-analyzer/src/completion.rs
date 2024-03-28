@@ -76,7 +76,7 @@ fn identifiers(buffer: &str, symbols: &Symbols, path: &PathBuf) -> Vec<Completio
     }
 
     let mut ids = HashSet::new();
-    while lexer.peek() != Tok::EOF {
+    while lexer.peek() != Tok::Eof {
         // Some tokens, such as "phantom", are contextual keywords that are only reserved in
         // certain contexts. Since for now this language server doesn't analyze semantic context,
         // tokens such as "phantom" are always present in keyword suggestions. To avoid displaying

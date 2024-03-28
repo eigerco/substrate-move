@@ -2,7 +2,7 @@
 // Copyright (c) The Move Contributors
 // SPDX-License-Identifier: Apache-2.0
 
-use super::cfg::CFG;
+use super::cfg::Cfg;
 use crate::{diagnostics::Diagnostics, hlir::ast::*};
 use std::collections::BTreeMap;
 
@@ -83,7 +83,7 @@ pub trait AbstractInterpreter: TransferFunctions {
     /// Analyze procedure local@function_view starting from pre-state local@initial_state.
     fn analyze_function(
         &mut self,
-        cfg: &dyn CFG,
+        cfg: &dyn Cfg,
         initial_state: Self::State,
     ) -> (BTreeMap<Label, Self::State>, Diagnostics) {
         let mut inv_map: InvariantMap<Self::State> = InvariantMap::new();
@@ -151,7 +151,7 @@ pub trait AbstractInterpreter: TransferFunctions {
 
     fn execute_block(
         &mut self,
-        cfg: &dyn CFG,
+        cfg: &dyn Cfg,
         pre_state: &Self::State,
         block_lbl: Label,
     ) -> (Self::State, Diagnostics) {

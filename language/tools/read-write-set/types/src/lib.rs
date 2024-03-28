@@ -196,9 +196,9 @@ impl ReadWriteSet {
     }
 
     pub fn add_access_path(&mut self, access_path: AccessPath, access: Access) {
-        let mut node = self.0.entry(access_path.root).or_insert_with(TrieNode::new);
+        let mut node = self.0.entry(access_path.root).or_default();
         for offset in access_path.offsets {
-            node = node.children.entry(offset).or_insert_with(TrieNode::new);
+            node = node.children.entry(offset).or_default();
         }
         node.data = Some(access);
     }
@@ -319,5 +319,17 @@ impl fmt::Display for ReadWriteSet {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         self.iter_paths(|path, v| writeln!(f, "{}: {:?}", path, v).ok());
         Ok(())
+    }
+}
+
+impl Default for TrieNode {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Default for ReadWriteSet {
+    fn default() -> Self {
+        Self::new()
     }
 }

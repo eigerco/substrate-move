@@ -939,7 +939,7 @@ impl<'env, 'translator> ModuleBuilder<'env, 'translator> {
         }
         let spec_fun_idx = spec_fun_id.as_usize();
         let body = if self.spec_funs[spec_fun_idx].body.is_some() {
-            std::mem::replace(&mut self.spec_funs[spec_fun_idx].body, None).unwrap()
+            self.spec_funs[spec_fun_idx].body.take().unwrap()
         } else {
             // If the function is native and contains no mutable references
             // as parameters, consider it pure.
@@ -1259,18 +1259,14 @@ impl<'env, 'translator> ModuleBuilder<'env, 'translator> {
     {
         use SpecBlockContext::*;
         match context {
-            Function(name) => update(
-                self.fun_specs
-                    .entry(name.symbol)
-                    .or_insert_with(Spec::default),
-            ),
+            Function(name) => update(self.fun_specs.entry(name.symbol).or_default()),
             FunctionCode(name, spec_info) => update(
                 self.fun_specs
                     .entry(name.symbol)
-                    .or_insert_with(Spec::default)
+                    .or_default()
                     .on_impl
                     .entry(spec_info.offset)
-                    .or_insert_with(Spec::default),
+                    .or_default(),
             ),
             Schema(name) => update(
                 &mut self
@@ -1280,11 +1276,7 @@ impl<'env, 'translator> ModuleBuilder<'env, 'translator> {
                     .expect("schema defined")
                     .spec,
             ),
-            Struct(name) => update(
-                self.struct_specs
-                    .entry(name.symbol)
-                    .or_insert_with(Spec::default),
-            ),
+            Struct(name) => update(self.struct_specs.entry(name.symbol).or_default()),
             Module => update(&mut self.module_spec),
         }
     }
@@ -2877,7 +2869,7 @@ impl<'env, 'translator> ModuleBuilder<'env, 'translator> {
         // the full self. Rust requires us to do so (at least the author doesn't know better yet),
         // but moving it should be not too expensive.
         let body = if self.spec_funs[fun_idx].body.is_some() {
-            std::mem::replace(&mut self.spec_funs[fun_idx].body, None).unwrap()
+            self.spec_funs[fun_idx].body.take().unwrap()
         } else {
             // No body: assume it is pure.
             return;
@@ -3204,7 +3196,7 @@ impl<'env, 'translator> ModuleBuilder<'env, 'translator> {
                         fun_spec,
                     )))
                 } else {
-                    let funs = self.parent.fun_table.iter().map(|(k, _)| {
+                    let funs = self.parent.fun_table.keys().map(|k| {
                         format!("{}", k.display_full(self.symbol_pool()))
                     }).join(", ");
                     self.parent.error(

@@ -54,7 +54,6 @@ use crate::{
 use anyhow::{anyhow, Result};
 use codespan_reporting::files::SimpleFiles;
 use crossbeam::channel::Sender;
-use derivative::*;
 use im::ordmap::OrdMap;
 use lsp_server::{Request, RequestId};
 use lsp_types::{
@@ -167,15 +166,32 @@ struct StructDef {
     field_defs: Vec<FieldDef>,
 }
 
-#[derive(Derivative, Debug, Clone, PartialEq, Eq)]
-#[derivative(PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FunctionDef {
     name: Symbol,
     start: Position,
     attrs: Vec<String>,
-    #[derivative(PartialOrd = "ignore")]
-    #[derivative(Ord = "ignore")]
     ident_type: IdentType,
+}
+
+impl Ord for FunctionDef {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        if self.name.ne(&other.name) {
+            self.name.partial_cmp(&other.name).unwrap()
+        } else if self.start.ne(&other.start) {
+            self.start.partial_cmp(&other.start).unwrap()
+        } else if self.attrs.ne(&other.attrs) {
+            self.attrs.partial_cmp(&other.attrs).unwrap()
+        } else {
+            std::cmp::Ordering::Equal
+        }
+    }
+}
+
+impl PartialOrd for FunctionDef {
+    fn partial_cmp(&self, other: &FunctionDef) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
 }
 
 /// Module-level definitions

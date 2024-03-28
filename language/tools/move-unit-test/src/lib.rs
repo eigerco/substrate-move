@@ -209,7 +209,7 @@ impl UnitTestingConfig {
         } = self.compile_to_test_plan(deps.clone(), vec![])?;
 
         let mut test_plan = self.compile_to_test_plan(self.source_files.clone(), deps)?;
-        test_plan.module_info.extend(module_info.into_iter());
+        test_plan.module_info.extend(module_info);
         test_plan.files.extend(files);
         Some(test_plan)
     }

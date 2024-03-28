@@ -133,7 +133,7 @@ mod tests {
 
     #[test]
     fn test_buf_reader() {
-        let in_buf = vec![0, 1, 2, 3, 4, 5, 6, 7];
+        let in_buf = [0, 1, 2, 3, 4, 5, 6, 7];
         let mut reader = Cursor::new(&in_buf[..]);
         let mut buf = [];
         assert_eq!(reader.read(&mut buf).unwrap(), 0);
