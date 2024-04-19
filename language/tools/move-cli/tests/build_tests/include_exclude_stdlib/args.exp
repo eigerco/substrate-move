@@ -1,4 +1,5 @@
 Command `build -v`:
+UPDATING GIT DEPENDENCY https://github.com/eigerco/move-stdlib
 BUILDING build_include_exclude_stdlib
 error[E03002]: unbound module
   ┌─ ./sources/UseSigner.move:3:7
@@ -13,5 +14,7 @@ error[E03002]: unbound module
   │     ^^^^^^ Unbound module alias 'signer'
 
 Command `-d -v build`:
+UPDATING GIT DEPENDENCY https://github.com/eigerco/move-stdlib
+UPDATING GIT DEPENDENCY https://github.com/eigerco/move-stdlib
 INCLUDING DEPENDENCY MoveStdlib
 BUILDING build_include_exclude_stdlib

@@ -8,4 +8,4 @@ Evm = "0x2"
 
 [dependencies]
 EvmStdlib = { local = "../../../stdlib" }
-MoveStdlib = { local = "../../../../move-stdlib" }
+MoveStdlib = { git = "https://github.com/eigerco/move-stdlib", ref = "main" }

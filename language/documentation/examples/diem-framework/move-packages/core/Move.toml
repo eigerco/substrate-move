@@ -9,5 +9,5 @@ CoreFramework = "0x1"
 CoreResources = "0xA550C18"
 
 [dependencies]
-MoveStdlib = { local = "../../../../../move-stdlib" }
+MoveStdlib = { git = "https://github.com/eigerco/move-stdlib", rev = "main" }
 MoveNursery = { local = "../../../../../move-stdlib/nursery" }

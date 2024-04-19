@@ -122,7 +122,7 @@ Next add the following to the `Move.toml`:
 
 ```
 [dependencies]
-MoveStdlib = { git = "https://github.com/diem/diem.git", subdir="language/move-stdlib", rev = "56ab033cc403b489e891424a629e76f643d4fb6b", addr_subst = { "std" = "0x1" } }
+MoveStdlib = { git = "https://github.com/eigerco/move-stdlib.git", rev = "main", addr_subst = { "std" = "0x1" } }
 ```
 
 Next add the following module under the `sources` directory:

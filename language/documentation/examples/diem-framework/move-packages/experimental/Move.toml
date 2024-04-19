@@ -13,6 +13,6 @@ CurrencyInfo = "0xA550C18"
 VMReserved = "0x0"
 
 [dependencies]
-MoveStdlib = { local = "../../../../../move-stdlib" }
+MoveStdlib = { git = "https://github.com/eigerco/move-stdlib", rev = "main" }
 
 DiemCoreFramework = { local = "../core" }

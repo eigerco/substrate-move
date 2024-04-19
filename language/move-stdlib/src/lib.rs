@@ -18,14 +18,14 @@ pub mod natives;
 #[cfg(feature = "std")]
 pub mod doc;
 
-#[cfg(feature = "stdlib-bytecode")]
 /// Provides a precompiled bundle of move-stdlib bytecode modules.
+#[cfg(feature = "stdlib-bytecode")]
 pub fn move_stdlib_bundle() -> &'static [u8] {
-    include_bytes!("../build/MoveStdlib/bundles/MoveStdlib.mvb")
+    include_bytes!("../MoveStdlib/build/MoveStdlib/bundles/MoveStdlib.mvb")
 }
 
-#[cfg(feature = "stdlib-bytecode")]
 /// Provides a precompiled bundle of substrate-stdlib bytecode modules.
+#[cfg(feature = "stdlib-bytecode")]
 pub fn substrate_stdlib_bundle() -> &'static [u8] {
     include_bytes!("../substrate-stdlib/build/substrate-stdlib/bundles/substrate-stdlib.mvb")
 }

@@ -6,4 +6,4 @@ version = "1.0.0"
 B = "_"
 
 [dev-dependencies]
-MoveStdlib = { local = "../../../../../../move-stdlib" }
+MoveStdlib = { git = "https://github.com/eigerco/move-stdlib", rev = "main" }

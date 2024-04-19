@@ -11,4 +11,4 @@ std = "0x1"
 Async = "0x1"
 
 [dependencies]
-MoveStdlib = { local = "../../../move-stdlib" }
+MoveStdlib = { git = "https://github.com/eigerco/move-stdlib", rev = "main" }

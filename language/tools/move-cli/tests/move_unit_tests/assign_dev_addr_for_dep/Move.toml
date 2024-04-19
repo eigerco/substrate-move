@@ -10,5 +10,5 @@ A = "0x2"
 B = "0x3"
 
 [dev-dependencies]
-MoveStdlib = { local = "../../../../../move-stdlib" }
+MoveStdlib = { git = "https://github.com/eigerco/move-stdlib", rev = "main" }
 Bar = { local = "dep" }

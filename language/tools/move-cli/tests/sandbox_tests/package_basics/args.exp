@@ -1,4 +1,6 @@
 Command `build`:
+UPDATING GIT DEPENDENCY https://github.com/eigerco/move-stdlib
+UPDATING GIT DEPENDENCY https://github.com/eigerco/move-stdlib
 INCLUDING DEPENDENCY MoveStdlib
 BUILDING PackageBasics
 Command `test --coverage --threads 1`:
@@ -86,6 +88,8 @@ native public borrow_address(s: &signer): &address
 }
 Command `errmap`:
 Command `info`:
+UPDATING GIT DEPENDENCY https://github.com/eigerco/move-stdlib
+UPDATING GIT DEPENDENCY https://github.com/eigerco/move-stdlib
 PackageBasics
 ├─ std:0x1
 └─ MoveStdlib
