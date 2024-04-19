@@ -36,7 +36,7 @@ const TEST_ADDR: &str = "0x3";
 const SOURCE_DIRS: &[&str] = &[
     "./tests/sources",
     "../move-async-lib/sources",
-    "../../../move-stdlib/sources",
+    "../../../move-stdlib/MoveStdlib/sources",
 ];
 
 struct Harness {

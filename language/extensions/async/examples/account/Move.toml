@@ -12,4 +12,4 @@ arch = "async"
 
 [dependencies]
 MoveAsyncLib = { local = "../../move-async-lib" }
-MoveStdlib = { local = "../../../move-stdlib" }
+MoveStdlib = { git = "https://github.com/eigerco/move-stdlib", rev = "main" }

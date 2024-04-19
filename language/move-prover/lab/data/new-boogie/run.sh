@@ -5,7 +5,7 @@
 
 DIEM="$(git rev-parse --show-toplevel)"
 FRAMEWORK="$DIEM/diem-move/diem-framework/core/sources"
-STDLIB="$DIEM/language/move-stdlib/sources"
+STDLIB="$DIEM/language/move-stdlib/MoveStdlib/sources"
 
 if [[ "$EXP_BOOGIE_EXE" == "" ]]; then
   echo "environment variable EXP_BOOGIE_EXE must be set"

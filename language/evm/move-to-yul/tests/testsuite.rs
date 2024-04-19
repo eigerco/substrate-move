@@ -30,7 +30,7 @@ fn test_runner(path: &Path) -> datatest_stable::Result<()> {
     sources.push(path.to_string_lossy().to_string());
     let deps = vec![
         path_from_crate_root("../stdlib/sources"),
-        path_from_crate_root("../../move-stdlib/sources"),
+        path_from_crate_root("../../move-stdlib/MoveStdlib/sources"),
         path_from_crate_root("../../extensions/async/move-async-lib/sources"),
     ];
     let mut named_address_map = move_stdlib_named_addresses();

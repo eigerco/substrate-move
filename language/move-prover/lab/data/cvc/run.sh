@@ -5,7 +5,7 @@
 
 DIEM="$(git rev-parse --show-toplevel)"
 FRAMEWORK="$DIEM/diem-move/diem-framework/core/sources"
-STDLIB="$DIEM/language/move-stdlib/sources"
+STDLIB="$DIEM/language/move-stdlib/MoveStdlib/sources"
 
 for config in experiments/*.toml ; do
   # Benchmark per function

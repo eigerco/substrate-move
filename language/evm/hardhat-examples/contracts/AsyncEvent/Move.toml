@@ -9,5 +9,5 @@ Async = "0x1"
 
 [dependencies]
 EvmStdlib = { local = "../../../stdlib" }
-MoveStdlib = { local = "../../../../move-stdlib" }
+MoveStdlib = { git = "https://github.com/eigerco/move-stdlib", rev = "main" }
 MoveAsyncLib = { local = "../../../../extensions/async/move-async-lib" }

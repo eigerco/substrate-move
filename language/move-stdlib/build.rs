@@ -1,4 +1,5 @@
 use std::error::Error;
+#[cfg(feature = "stdlib-bytecode")]
 use std::process::Command;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -8,7 +9,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-#[allow(dead_code)]
+#[cfg(feature = "stdlib-bytecode")]
 fn build_stdlib_with_smove() -> Result<(), Box<dyn Error>> {
     let run_build_stdlib_script = Command::new("bash")
         .args(["build_stdlid_with_smove.sh"])

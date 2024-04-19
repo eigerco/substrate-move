@@ -10,5 +10,5 @@ std = "0x1"
 extensions = "0x2"
 
 [dependencies]
-MoveStdlib = { local = "../../move-stdlib" }
+MoveStdlib = { git = "https://github.com/eigerco/move-stdlib", rev = "main" }
 MoveNursery = { local = "../../move-stdlib/nursery" }

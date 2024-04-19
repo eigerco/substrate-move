@@ -3,8 +3,12 @@
 set -e
 
 # Build the move-stdlib bundle
-# Comment: source files could eventually be moved to another repo.
+pushd .
+rm -rf MoveStdlib
+git clone https://github.com/eigerco/move-stdlib.git MoveStdlib
+cd MoveStdlib
 smove bundle
+popd
 
 # Build the substrate-stdlib bundle
 pushd .

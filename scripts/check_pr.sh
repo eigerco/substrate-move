@@ -70,7 +70,7 @@ if [ "$OPTIND" -eq 1 ]; then
 fi
 
 ARTIFACT_CRATES="\
-  $BASE/language/move-stdlib\
+  $BASE/language/move-stdlib/MoveStdlib/
 "
 
 if [ ! -z "$TEST" ]; then
