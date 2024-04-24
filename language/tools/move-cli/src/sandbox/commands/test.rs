@@ -106,10 +106,7 @@ fn determine_package_nest_depth(
             Ok(r) => r,
             _ => continue,
         };
-        depth = std::cmp::max(
-            depth,
-            stripped_path.components().count() + 1,
-        );
+        depth = std::cmp::max(depth, stripped_path.components().count() + 1);
     }
     Ok(depth)
 }

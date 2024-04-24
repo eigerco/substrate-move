@@ -27,5 +27,5 @@ pub fn move_stdlib_bundle() -> &'static [u8] {
 /// Provides a precompiled bundle of substrate-stdlib bytecode modules.
 #[cfg(feature = "stdlib-bytecode")]
 pub fn substrate_stdlib_bundle() -> &'static [u8] {
-    include_bytes!("../substrate-stdlib/build/substrate-stdlib/bundles/substrate-stdlib.mvb")
+    include_bytes!("../SubstrateStdlib/build/SubstrateStdlib/bundles/SubstrateStdlib.mvb")
 }
