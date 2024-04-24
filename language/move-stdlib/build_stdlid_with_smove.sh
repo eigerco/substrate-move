@@ -12,8 +12,8 @@ popd
 
 # Build the substrate-stdlib bundle
 pushd .
-rm -rf substrate-stdlib
-git clone https://github.com/eigerco/substrate-stdlib.git
-cd substrate-stdlib
+rm -rf SubstrateStdlib
+git clone https://github.com/eigerco/substrate-stdlib.git SubstrateStdlib
+cd SubstrateStdlib
 smove bundle
 popd
