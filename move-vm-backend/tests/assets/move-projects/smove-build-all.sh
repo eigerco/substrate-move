@@ -5,6 +5,7 @@ cd $(dirname $0)
 
 build_dir=(
     "address_checks"
+    "base58_smove_build"
     "basic_coin"
     "depends_on__using_stdlib_full"
     "depends_on__using_stdlib_natives"

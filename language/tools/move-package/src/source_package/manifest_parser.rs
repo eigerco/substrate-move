@@ -302,6 +302,9 @@ fn parse_address_literal(address_str: &str) -> Result<AccountAddress, AccountAdd
     if let Ok(address) = move_vm_support::ss58_address::ss58_to_move_address(address_str) {
         return Ok(address);
     }
+    if let Ok(address) = move_vm_support::base58_address::base58_to_move_address(address_str) {
+        return Ok(address);
+    }
     let mut address_str = address_str.to_string();
     if !address_str.starts_with("0x") {
         address_str = format!("0x{}", address_str);

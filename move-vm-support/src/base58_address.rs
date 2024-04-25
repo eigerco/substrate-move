@@ -162,6 +162,14 @@ mod tests {
             "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
             ss58_address
         );
+
+        // This one is Bob's address for further move-project based testings.
+        let base58_address = "AbygL37RheNZv327cMvZPqKYLLkZ6wqWYexRxgNiZyeP";
+        let ss58_address = base58_string_to_ss588_string(base58_address).unwrap();
+        assert_eq!(
+            "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+            ss58_address
+        );
     }
 
     #[test]
@@ -177,6 +185,14 @@ mod tests {
         let base58_address = ss58_string_to_base58_string(ss58_address).unwrap();
         assert_eq!(
             "AjtNsBf2JLsVANbtsqLTLrGz5JxDRosGT8XXqn1cPvSd",
+            base58_address
+        );
+
+        // This one is Bob's address for further move-project based testings.
+        let ss58_address = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty";
+        let base58_address = ss58_string_to_base58_string(ss58_address).unwrap();
+        assert_eq!(
+            "AbygL37RheNZv327cMvZPqKYLLkZ6wqWYexRxgNiZyeP",
             base58_address
         );
     }
