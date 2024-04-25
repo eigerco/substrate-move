@@ -4,24 +4,11 @@ use anyhow::{bail, Result};
 use blake2::{Blake2b512, Digest};
 use move_core_types::account_address::AccountAddress;
 
+use super::*;
+
 // Substrate address prefix
 // Read more: https://docs.substrate.io/reference/address-formats/
 const SS58_PREFIX: &[u8] = b"SS58PRE";
-
-// Public key length in bytes
-const PUB_KEY_LEN: usize = 32;
-
-// Checksum length in bytes
-const CHECKSUM_LEN: usize = 2;
-
-// Blake2b512 hash length in bytes
-const HASH_LEN: usize = 64;
-
-// Maximum supported address type length in bytes
-const ADDR_TYPE_MAX_LEN: usize = 2;
-
-// Minimum supported address type length in bytes
-const ADDR_TYPE_MIN_LEN: usize = 1;
 
 // Maximum supported SS58 address length in bytes
 const SS58_MAX_LEN: usize = ADDR_TYPE_MAX_LEN + PUB_KEY_LEN + CHECKSUM_LEN;
@@ -30,7 +17,7 @@ const SS58_MAX_LEN: usize = ADDR_TYPE_MAX_LEN + PUB_KEY_LEN + CHECKSUM_LEN;
 const SS58_MIN_LEN: usize = ADDR_TYPE_MIN_LEN + PUB_KEY_LEN + CHECKSUM_LEN;
 
 // Universal address type for back conversions to SS58
-const UNIVERSAL_ADDRESS_TYPE: u8 = 42;
+const SS58_UNIVERSAL_ADDRESS_TYPE: u8 = 42;
 
 /// Convert ss58 address string to Move address structure
 /// In case if such conversion is not possible, return error.
@@ -52,13 +39,13 @@ pub fn ss58_to_move_address(ss58: &str) -> Result<AccountAddress> {
     let addr_type_len = match decoded_ss58.len() {
         SS58_MIN_LEN => ADDR_TYPE_MIN_LEN,
         SS58_MAX_LEN => ADDR_TYPE_MAX_LEN,
-        len => bail!("unsupported ss58 address length: {len}"),
+        len => bail!("unsupported ss58 address length (ss58): {len}"),
     };
 
     let (type_and_addr, checksum) = &decoded_ss58.split_at(addr_type_len + PUB_KEY_LEN);
 
     if *checksum != ss58_checksum(type_and_addr) {
-        bail!("invalid address checksum");
+        bail!("invalid address checksum (ss58)");
     }
 
     let (addr_type, address) = type_and_addr.split_at(addr_type_len);
@@ -66,10 +53,10 @@ pub fn ss58_to_move_address(ss58: &str) -> Result<AccountAddress> {
     // Sanity checks here
     match addr_type_len {
         ADDR_TYPE_MIN_LEN if (64..=127).contains(&addr_type[0]) => {
-            bail!("invalid address length, address types from 64 to 127 are two bytes long");
+            bail!("invalid address length (ss58), address types from 64 to 127 are two bytes long");
         }
         ADDR_TYPE_MAX_LEN if (0..=63).contains(&addr_type[0]) => {
-            bail!("invalid address length, address types from 0 to 63 are exactly one byte long");
+            bail!("invalid address length (ss58), address types from 0 to 63 are exactly one byte long");
         }
         _ => (),
     }
@@ -103,7 +90,7 @@ pub fn ss58_to_move_address_string(ss58: &str) -> Result<String> {
 /// ```
 pub fn move_address_to_ss58_string(addr: &AccountAddress) -> String {
     let mut ss58_address = [0; SS58_MIN_LEN];
-    ss58_address[0] = UNIVERSAL_ADDRESS_TYPE;
+    ss58_address[0] = SS58_UNIVERSAL_ADDRESS_TYPE;
     ss58_address[1..SS58_MIN_LEN - CHECKSUM_LEN].copy_from_slice(&addr.to_vec());
     let checksum = ss58_checksum(&ss58_address[0..SS58_MIN_LEN - CHECKSUM_LEN]);
     ss58_address[SS58_MIN_LEN - CHECKSUM_LEN..].copy_from_slice(&checksum);
@@ -118,7 +105,9 @@ fn ss58_checksum(data: &[u8]) -> [u8; CHECKSUM_LEN] {
     let hash: [u8; HASH_LEN] = hasher.finalize().into();
     let checksum = &hash[..CHECKSUM_LEN];
     // Convert checksum to fixed size array (always possible as hasher always return fixed size array)
-    checksum.try_into().expect("checksum length is invalid")
+    checksum
+        .try_into()
+        .expect("checksum length is invalid (ss58)")
 }
 
 #[cfg(test)]
