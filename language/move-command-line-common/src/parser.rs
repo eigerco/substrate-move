@@ -337,12 +337,13 @@ pub fn parse_address_impl(tok: ValueToken, contents: &str) -> Result<ParsedAddre
     })
 }
 
+/// Number format enum, the u32 value represents the base
 #[derive(Ord, PartialOrd, Eq, PartialEq, Hash, Clone, Copy)]
 #[repr(u32)]
-/// Number format enum, the u32 value represents the base
 pub enum NumberFormat {
     Decimal = 10,
     Hex = 16,
+    Base58 = 30,
     Ss58 = 32,
 }
 
@@ -416,6 +417,7 @@ pub fn parse_address_number(s: &str) -> Option<([u8; AccountAddress::LENGTH], Nu
         match base {
             NumberFormat::Hex => 16,
             NumberFormat::Decimal => 10,
+            NumberFormat::Base58 => 30,
             NumberFormat::Ss58 => 32,
         },
     )?;
