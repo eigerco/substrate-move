@@ -7,7 +7,4 @@ MoveStdlib = { git = "https://github.com/eigerco/move-stdlib", rev = "main" }
 
 [addresses]
 std =  "0x1"
-# Will be replaced after smove has got updated.
-# Bob = "AbygL37RheNZv327cMvZPqKYLLkZ6wqWYexRxgNiZyeP"
-# Temporary, to be replaced by address above.
-Bob = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+Bob = "AbygL37RheNZv327cMvZPqKYLLkZ6wqWYexRxgNiZyeP"

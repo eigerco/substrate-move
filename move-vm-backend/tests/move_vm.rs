@@ -620,3 +620,29 @@ fn execute_transfer_script_and_check_balance_updates() {
     let result = vm.execute_script(&script, type_args, params, gas);
     assert!(!result.is_ok(), "managed to execute the script");
 }
+
+#[test]
+fn publish_module_with_base58_address() {
+    let store = StorageMock::new();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
+
+    let address = AccountAddress::from_hex_literal(
+        "0x8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48",
+    )
+    .unwrap();
+    let module = read_module_bytes_from_project("base58_smove_build", "BobBase58");
+
+    // For the first case, use the maximum amount of gas.
+    let provided_gas_amount = GasAmount::max();
+    let gas = GasStrategy::Metered(provided_gas_amount);
+
+    let result = vm.publish_module(&module, address, gas);
+
+    let estimated_gas = estimate_gas_for_published_bytecode(&module);
+    assert!(result.is_ok(), "failed to publish the module");
+    assert_eq!(result.gas_used, estimated_gas, "invalid gas estimate");
+    assert!(
+        result.gas_used < provided_gas_amount.inner(),
+        "invalid gas calulation"
+    );
+}

@@ -98,9 +98,10 @@ specified_address = "0xB0B"
 # Local dependency
 LocalDep = { local = "projects/move-awesomeness", addr_subst = { "std" = "0x1" } }
 # Git dependency
-MoveStdlib = { git = "https://github.com/diem/diem.git", subdir="language/move-stdlib", rev = "56ab033cc403b489e891424a629e76f643d4fb6b" }
+MoveStdlib = { git = "https://github.com/eigerco/move-stdlib", rev = "main" }
 
 [dev-addresses] # For use when developing this module
+std = "0x1"
 address_to_be_filled_in = "0x101010101"
 ```
 
