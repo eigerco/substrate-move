@@ -29,7 +29,7 @@ The file at the path to `<my_config.toml>` should contain (at least) the followi
 
 ```toml
 move_deps = [
-    "<your-path-to>/diem/language/move-stdlib/sources"
+    "<your-path-to>/diem/language/move-stdlib/MoveStdlib/sources"
 ]
 move_named_address_values = [
     "Std=0x1",

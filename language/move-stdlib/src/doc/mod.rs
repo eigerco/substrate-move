@@ -7,7 +7,7 @@ use move_compiler::shared::NumericalAddress;
 use move_core_types::account_address::AccountAddress;
 use std::{collections::BTreeMap, path::PathBuf};
 
-const MODULES_DIR: &str = "sources";
+const MODULES_DIR: &str = "MoveStdlib/sources";
 const NURSERY_DIR: &str = "nursery";
 const DOCS_DIR: &str = "docs";
 const NURSERY_DOCS_DIR: &str = "nursery/docs";
