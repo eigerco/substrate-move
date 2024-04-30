@@ -19,131 +19,141 @@ use move_core_types::u256;
 use move_stdlib::natives::GasParameters;
 use move_vm_test_utils::gas_schedule::{new_from_instructions, CostTable, GasCost};
 
-// TODO(rqnsom): tweak the cost
 /// A predefined gas cost to published byte ratio.
 pub const GAS_COST_PER_PUBLISHED_BYTE: u64 = 100;
 
+/// Generic gas cost table scale factor, that will be applied linearly.
+pub const TABLE_GAS_COST_SCALE_FACTOR: f64 = 1.0;
+
+macro_rules! gas_cost {
+    ($op:expr, $gas:literal) => {
+        (
+            $op,
+            GasCost::new((($gas as f64) * TABLE_GAS_COST_SCALE_FACTOR) as u64, 0),
+        )
+    };
+}
+
 lazy_static! {
-    // TODO(rqnsom): tweak the cost for intructions
     /// A predefined gas strategy for instruction table cost.
     pub static ref INSTRUCTION_COST_TABLE: CostTable = {
         let mut instrs = vec![
-        (MoveTo(StructDefinitionIndex::new(0)), GasCost::new(13, 1)),
-        (
+        gas_cost!(MoveTo(StructDefinitionIndex::new(0)), 1838),
+        gas_cost!(
             MoveToGeneric(StructDefInstantiationIndex::new(0)),
-            GasCost::new(27, 1),
+            1838
         ),
-        (
+        gas_cost!(
             MoveFrom(StructDefinitionIndex::new(0)),
-            GasCost::new(459, 1),
+            1286
         ),
-        (
+        gas_cost!(
             MoveFromGeneric(StructDefInstantiationIndex::new(0)),
-            GasCost::new(13, 1),
+            1286
         ),
-        (BrTrue(0), GasCost::new(1, 1)),
-        (WriteRef, GasCost::new(1, 1)),
-        (Mul, GasCost::new(1, 1)),
-        (MoveLoc(0), GasCost::new(1, 1)),
-        (And, GasCost::new(1, 1)),
-        (Pop, GasCost::new(1, 1)),
-        (BitAnd, GasCost::new(2, 1)),
-        (ReadRef, GasCost::new(1, 1)),
-        (Sub, GasCost::new(1, 1)),
-        (MutBorrowField(FieldHandleIndex::new(0)), GasCost::new(1, 1)),
-        (
+        gas_cost!(BrTrue(0), 441),
+        gas_cost!(WriteRef, 735),
+        gas_cost!(Mul, 588),
+        gas_cost!(MoveLoc(0), 441),
+        gas_cost!(And, 588),
+        gas_cost!(Pop, 147),
+        gas_cost!(BitAnd, 588),
+        gas_cost!(ReadRef, 735),
+        gas_cost!(Sub, 588),
+        gas_cost!(MutBorrowField(FieldHandleIndex::new(0)), 735),
+        gas_cost!(
             MutBorrowFieldGeneric(FieldInstantiationIndex::new(0)),
-            GasCost::new(1, 1),
+            735
         ),
-        (ImmBorrowField(FieldHandleIndex::new(0)), GasCost::new(1, 1)),
-        (
+        gas_cost!(ImmBorrowField(FieldHandleIndex::new(0)), 735),
+        gas_cost!(
             ImmBorrowFieldGeneric(FieldInstantiationIndex::new(0)),
-            GasCost::new(1, 1),
+            735
         ),
-        (Add, GasCost::new(1, 1)),
-        (CopyLoc(0), GasCost::new(1, 1)),
-        (StLoc(0), GasCost::new(1, 1)),
-        (Ret, GasCost::new(638, 1)),
-        (Lt, GasCost::new(1, 1)),
-        (LdU8(0), GasCost::new(1, 1)),
-        (LdU64(0), GasCost::new(1, 1)),
-        (LdU128(0), GasCost::new(1, 1)),
-        (CastU8, GasCost::new(2, 1)),
-        (CastU64, GasCost::new(1, 1)),
-        (CastU128, GasCost::new(1, 1)),
-        (Abort, GasCost::new(1, 1)),
-        (MutBorrowLoc(0), GasCost::new(2, 1)),
-        (ImmBorrowLoc(0), GasCost::new(1, 1)),
-        (LdConst(ConstantPoolIndex::new(0)), GasCost::new(1, 1)),
-        (Ge, GasCost::new(1, 1)),
-        (Xor, GasCost::new(1, 1)),
-        (Shl, GasCost::new(2, 1)),
-        (Shr, GasCost::new(1, 1)),
-        (Neq, GasCost::new(1, 1)),
-        (Not, GasCost::new(1, 1)),
-        (Call(FunctionHandleIndex::new(0)), GasCost::new(1132, 1)),
-        (
+        gas_cost!(Add, 588),
+        gas_cost!(CopyLoc(0), 294),
+        gas_cost!(StLoc(0), 441),
+        gas_cost!(Ret, 220),
+        gas_cost!(Lt, 588),
+        gas_cost!(LdU8(0), 220),
+        gas_cost!(LdU64(0), 220),
+        gas_cost!(LdU128(0), 220),
+        gas_cost!(CastU8, 441),
+        gas_cost!(CastU64, 441),
+        gas_cost!(CastU128, 441),
+        gas_cost!(Abort, 220),
+        gas_cost!(MutBorrowLoc(0), 220),
+        gas_cost!(ImmBorrowLoc(0), 220),
+        gas_cost!(LdConst(ConstantPoolIndex::new(0)), 2389),
+        gas_cost!(Ge, 588),
+        gas_cost!(Xor, 588),
+        gas_cost!(Shl, 588),
+        gas_cost!(Shr, 588),
+        gas_cost!(Neq, 367),
+        gas_cost!(Not, 588),
+        gas_cost!(Call(FunctionHandleIndex::new(0)), 3676),
+        gas_cost!(
             CallGeneric(FunctionInstantiationIndex::new(0)),
-            GasCost::new(582, 1),
+            808
         ),
-        (Le, GasCost::new(2, 1)),
-        (Branch(0), GasCost::new(1, 1)),
-        (Unpack(StructDefinitionIndex::new(0)), GasCost::new(2, 1)),
-        (
+        gas_cost!(Le, 588),
+        gas_cost!(Branch(0), 294),
+        gas_cost!(Unpack(StructDefinitionIndex::new(0)), 808),
+        gas_cost!(
             UnpackGeneric(StructDefInstantiationIndex::new(0)),
-            GasCost::new(2, 1),
+            808
         ),
-        (Or, GasCost::new(2, 1)),
-        (LdFalse, GasCost::new(1, 1)),
-        (LdTrue, GasCost::new(1, 1)),
-        (Mod, GasCost::new(1, 1)),
-        (BrFalse(0), GasCost::new(1, 1)),
-        (Exists(StructDefinitionIndex::new(0)), GasCost::new(41, 1)),
-        (
+        gas_cost!(Or, 588),
+        gas_cost!(LdFalse, 220),
+        gas_cost!(LdTrue, 220),
+        gas_cost!(Mod, 588),
+        gas_cost!(BrFalse(0), 441),
+        gas_cost!(Exists(StructDefinitionIndex::new(0)), 919),
+        gas_cost!(
             ExistsGeneric(StructDefInstantiationIndex::new(0)),
-            GasCost::new(34, 1),
+            919
         ),
-        (BitOr, GasCost::new(2, 1)),
-        (FreezeRef, GasCost::new(1, 1)),
-        (
+        gas_cost!(BitOr, 588),
+        gas_cost!(FreezeRef, 36),
+        gas_cost!(
             MutBorrowGlobal(StructDefinitionIndex::new(0)),
-            GasCost::new(21, 1),
+            1838
         ),
-        (
+        gas_cost!(
             MutBorrowGlobalGeneric(StructDefInstantiationIndex::new(0)),
-            GasCost::new(15, 1),
+            1838
         ),
-        (
+        gas_cost!(
             ImmBorrowGlobal(StructDefinitionIndex::new(0)),
-            GasCost::new(23, 1),
+            1838
         ),
-        (
+        gas_cost!(
             ImmBorrowGlobalGeneric(StructDefInstantiationIndex::new(0)),
-            GasCost::new(14, 1),
+            1838
         ),
-        (Div, GasCost::new(3, 1)),
-        (Eq, GasCost::new(1, 1)),
-        (Gt, GasCost::new(1, 1)),
-        (Pack(StructDefinitionIndex::new(0)), GasCost::new(2, 1)),
-        (
+        gas_cost!(Div, 588),
+        gas_cost!(Eq, 367),
+        gas_cost!(Gt, 588),
+        gas_cost!(Pack(StructDefinitionIndex::new(0)), 808),
+        gas_cost!(
             PackGeneric(StructDefInstantiationIndex::new(0)),
-            GasCost::new(2, 1),
+            808
         ),
-        (Nop, GasCost::new(1, 1)),
-        (VecPack(SignatureIndex::new(0), 0), GasCost::new(84, 1)),
-        (VecLen(SignatureIndex::new(0)), GasCost::new(98, 1)),
-        (VecImmBorrow(SignatureIndex::new(0)), GasCost::new(1334, 1)),
-        (VecMutBorrow(SignatureIndex::new(0)), GasCost::new(1902, 1)),
-        (VecPushBack(SignatureIndex::new(0)), GasCost::new(53, 1)),
-        (VecPopBack(SignatureIndex::new(0)), GasCost::new(227, 1)),
-        (VecUnpack(SignatureIndex::new(0), 0), GasCost::new(572, 1)),
-        (VecSwap(SignatureIndex::new(0)), GasCost::new(1436, 1)),
-        (LdU16(0), GasCost::new(1, 1)),
-        (LdU32(0), GasCost::new(1, 1)),
-        (LdU256(u256::U256::zero()), GasCost::new(1, 1)),
-        (CastU16, GasCost::new(2, 1)),
-        (CastU32, GasCost::new(2, 1)),
-        (CastU256, GasCost::new(2, 1)),
+        gas_cost!(Nop, 36),
+        gas_cost!(VecPack(SignatureIndex::new(0), 0), 2205),
+        gas_cost!(VecLen(SignatureIndex::new(0)), 808),
+        gas_cost!(VecImmBorrow(SignatureIndex::new(0)), 1213),
+        gas_cost!(VecMutBorrow(SignatureIndex::new(0)), 1213),
+        gas_cost!(VecPushBack(SignatureIndex::new(0)), 1396),
+        gas_cost!(VecPopBack(SignatureIndex::new(0)), 955),
+        gas_cost!(VecUnpack(SignatureIndex::new(0), 0), 1838),
+        gas_cost!(VecSwap(SignatureIndex::new(0)), 1102),
+        gas_cost!(LdU16(0), 220),
+        gas_cost!(LdU32(0), 220),
+        gas_cost!(LdU256(u256::U256::zero()), 294),
+        gas_cost!(CastU16, 441),
+        gas_cost!(CastU32, 441),
+        gas_cost!(CastU256, 441),
     ];
 
         // Note that the DiemVM is expecting the table sorted by instruction order.
@@ -160,21 +170,21 @@ lazy_static! {
         GasParameters {
             bcs: move_stdlib::natives::bcs::GasParameters {
                 to_bytes: move_stdlib::natives::bcs::ToBytesGasParameters {
-                    per_byte_serialized: 1000.into(),
+                    per_byte_serialized: 36.into(),
+                    failure: 3676.into(),
                     legacy_min_output_size: 1000.into(),
-                    failure: 1000.into(),
                 },
             },
 
             hash: move_stdlib::natives::hash::GasParameters {
                 sha2_256: move_stdlib::natives::hash::Sha2_256GasParameters {
-                    base: 1000.into(),
-                    per_byte: 1000.into(),
+                    base: 11028.into(),
+                    per_byte: 183.into(),
                     legacy_min_input_len: 1000.into(),
                 },
                 sha3_256: move_stdlib::natives::hash::Sha3_256GasParameters {
-                    base: 1000.into(),
-                    per_byte: 1000.into(),
+                    base: 14704.into(),
+                    per_byte: 165.into(),
                     legacy_min_input_len: 1000.into(),
                 },
             },
@@ -185,22 +195,22 @@ lazy_static! {
                 },
             },
             signer: move_stdlib::natives::signer::GasParameters {
-                borrow_address: move_stdlib::natives::signer::BorrowAddressGasParameters { base: 1000.into() },
+                borrow_address: move_stdlib::natives::signer::BorrowAddressGasParameters { base: 735.into() },
             },
             string: move_stdlib::natives::string::GasParameters {
                 check_utf8: move_stdlib::natives::string::CheckUtf8GasParameters {
-                    base: 1000.into(),
-                    per_byte: 1000.into(),
+                    base: 1102.into(),
+                    per_byte: 29.into(),
                 },
-                is_char_boundary: move_stdlib::natives::string::IsCharBoundaryGasParameters { base: 1000.into() },
+                is_char_boundary: move_stdlib::natives::string::IsCharBoundaryGasParameters { base: 1102.into() },
                 sub_string: move_stdlib::natives::string::SubStringGasParameters {
-                    base: 1000.into(),
-                    per_byte: 1000.into(),
+                    base: 1470.into(),
+                    per_byte: 11.into(),
                 },
                 index_of: move_stdlib::natives::string::IndexOfGasParameters {
-                    base: 1000.into(),
-                    per_byte_pattern: 1000.into(),
-                    per_byte_searched: 1000.into(),
+                    base: 1470.into(),
+                    per_byte_pattern: 73.into(),
+                    per_byte_searched: 36.into(),
                 },
             },
             vector: move_stdlib::natives::vector::GasParameters {
