@@ -20,7 +20,7 @@ use move_stdlib::natives::GasParameters;
 use move_vm_test_utils::gas_schedule::{new_from_instructions, CostTable, GasCost};
 
 /// A predefined gas cost to published byte ratio.
-pub const GAS_COST_PER_PUBLISHED_BYTE: u64 = 100;
+pub const GAS_COST_PER_PUBLISHED_BYTE: u64 = 10;
 
 /// Generic gas cost table scale factor, that will be applied linearly.
 pub const TABLE_GAS_COST_SCALE_FACTOR: f64 = 1.0;
