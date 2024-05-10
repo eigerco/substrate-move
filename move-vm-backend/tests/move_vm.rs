@@ -61,8 +61,8 @@ fn read_script_bytes_from_project(project: &str, script_name: &str) -> Vec<u8> {
 /// Estimate gas for published module / bundle.
 #[inline]
 fn estimate_gas_for_published_bytecode(bytecode: &[u8]) -> u64 {
-    let raw_gas_cost =
-        bytecode.len() as u64 * move_vm_backend_common::gas_schedule::GAS_COST_PER_PUBLISHED_BYTE;
+    let raw_gas_cost = bytecode.len() as u64
+        * move_vm_backend_common::gas_schedule::MILLIGAS_COST_PER_PUBLISHED_BYTE;
     num_integer::div_ceil(raw_gas_cost, 1000)
 }
 
