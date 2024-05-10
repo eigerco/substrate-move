@@ -5,7 +5,9 @@ use move_core_types::gas_algebra::GasQuantity;
 use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::TypeTag;
 use move_core_types::vm_status::StatusCode;
-use move_vm_backend_common::gas_schedule::{GAS_COST_PER_PUBLISHED_BYTE, INSTRUCTION_COST_TABLE};
+use move_vm_backend_common::gas_schedule::{
+    INSTRUCTION_COST_TABLE, MILLIGAS_COST_PER_PUBLISHED_BYTE,
+};
 use move_vm_test_utils::gas_schedule::GasStatus;
 use move_vm_types::gas::GasMeter;
 
@@ -178,7 +180,7 @@ impl GasHandler<'_> {
         num_bytes: usize,
     ) -> Result<(), VmResult> {
         let remaining_gas = self.status.remaining_gas();
-        let amount = GasQuantity::new(num_bytes as u64 * GAS_COST_PER_PUBLISHED_BYTE);
+        let amount = GasQuantity::new(num_bytes as u64 * MILLIGAS_COST_PER_PUBLISHED_BYTE);
 
         self.status.deduct_gas(amount).map_err(|e| VmResult {
             status_code: e.major_status(),
