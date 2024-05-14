@@ -45,6 +45,9 @@ fn native_to_bytes(
     mut ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(ty_args.len() == 1);
     debug_assert!(args.len() == 1);
 
@@ -77,10 +80,15 @@ fn native_to_bytes(
             gas_params.legacy_min_output_size,
         );
 
-    Ok(NativeResult::ok(
+    let r = Ok(NativeResult::ok(
         cost,
         smallvec![Value::vector_u8(serialized_value)],
-    ))
+    ));
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_bcs_to_bytes.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_to_bytes(gas_params: ToBytesGasParameters) -> NativeFunction {

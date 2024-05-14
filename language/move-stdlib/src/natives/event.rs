@@ -33,6 +33,9 @@ fn native_write_to_event_store(
     mut ty_args: Vec<Type>,
     mut arguments: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(ty_args.len() == 1);
     debug_assert!(arguments.len() == 3);
 
@@ -47,7 +50,12 @@ fn native_write_to_event_store(
         return Ok(NativeResult::err(cost, 0));
     }
 
-    Ok(NativeResult::ok(cost, smallvec![]))
+    let r = Ok(NativeResult::ok(cost, smallvec![]));
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_event_write_to_event_store.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_write_to_event_store(

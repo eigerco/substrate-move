@@ -35,15 +35,23 @@ fn native_borrow_address(
     _ty_args: Vec<Type>,
     mut arguments: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(_ty_args.is_empty());
     debug_assert!(arguments.len() == 1);
 
     let signer_reference = pop_arg!(arguments, SignerRef);
 
-    Ok(NativeResult::ok(
+    let r = Ok(NativeResult::ok(
         gas_params.base,
         smallvec![signer_reference.borrow_signer()?],
-    ))
+    ));
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_signer_borrow_address.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_borrow_address(gas_params: BorrowAddressGasParameters) -> NativeFunction {

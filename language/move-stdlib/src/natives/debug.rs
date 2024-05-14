@@ -36,6 +36,9 @@ fn native_print(
     mut args: VecDeque<Value>,
     _move_std_addr: AccountAddress,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(ty_args.len() == 1);
     debug_assert!(args.len() == 1);
 
@@ -66,7 +69,12 @@ fn native_print(
         println!("{}", out);
     }
 
-    Ok(NativeResult::ok(gas_params.base_cost, smallvec![]))
+    let r = Ok(NativeResult::ok(gas_params.base_cost, smallvec![]));
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_debug_print.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_print(
@@ -98,6 +106,9 @@ fn native_print_stack_trace(
     ty_args: Vec<Type>,
     args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(ty_args.is_empty());
     debug_assert!(args.is_empty());
 
@@ -108,7 +119,12 @@ fn native_print_stack_trace(
         println!("{}", s);
     }
 
-    Ok(NativeResult::ok(gas_params.base_cost, smallvec![]))
+    let r = Ok(NativeResult::ok(gas_params.base_cost, smallvec![]));
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_debug_print_stack_trace.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_print_stack_trace(gas_params: PrintStackTraceGasParameters) -> NativeFunction {

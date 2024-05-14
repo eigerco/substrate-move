@@ -37,10 +37,18 @@ pub fn native_empty(
     ty_args: Vec<Type>,
     args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(ty_args.len() == 1);
     debug_assert!(args.is_empty());
 
-    NativeResult::map_partial_vm_result_one(gas_params.base, Vector::empty(&ty_args[0]))
+    let r = NativeResult::map_partial_vm_result_one(gas_params.base, Vector::empty(&ty_args[0]));
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_vector_empty.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_empty(gas_params: EmptyGasParameters) -> NativeFunction {
@@ -68,11 +76,19 @@ pub fn native_length(
     ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(ty_args.len() == 1);
     debug_assert!(args.len() == 1);
 
     let r = pop_arg!(args, VectorRef);
-    NativeResult::map_partial_vm_result_one(gas_params.base, r.len(&ty_args[0]))
+    let r = NativeResult::map_partial_vm_result_one(gas_params.base, r.len(&ty_args[0]));
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_vector_length.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_length(gas_params: LengthGasParameters) -> NativeFunction {
@@ -101,6 +117,9 @@ pub fn native_push_back(
     ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(ty_args.len() == 1);
     debug_assert!(args.len() == 2);
 
@@ -113,7 +132,12 @@ pub fn native_push_back(
             * core::cmp::max(e.legacy_abstract_memory_size(), 1.into());
     }
 
-    NativeResult::map_partial_vm_result_empty(cost, r.push_back(e, &ty_args[0]))
+    let r = NativeResult::map_partial_vm_result_empty(cost, r.push_back(e, &ty_args[0]));
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_vector_push_back.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_push_back(gas_params: PushBackGasParameters) -> NativeFunction {
@@ -141,16 +165,24 @@ pub fn native_borrow(
     ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(ty_args.len() == 1);
     debug_assert!(args.len() == 2);
 
     let idx = pop_arg!(args, u64) as usize;
     let r = pop_arg!(args, VectorRef);
-    NativeResult::map_partial_vm_result_one(
+    let r = NativeResult::map_partial_vm_result_one(
         gas_params.base,
         r.borrow_elem(idx, &ty_args[0])
             .map_err(native_error_to_abort),
-    )
+    );
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_vector_borrow.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_borrow(gas_params: BorrowGasParameters) -> NativeFunction {
@@ -178,14 +210,22 @@ pub fn native_pop_back(
     ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(ty_args.len() == 1);
     debug_assert!(args.len() == 1);
 
     let r = pop_arg!(args, VectorRef);
-    NativeResult::map_partial_vm_result_one(
+    let r = NativeResult::map_partial_vm_result_one(
         gas_params.base,
         r.pop(&ty_args[0]).map_err(native_error_to_abort),
-    )
+    );
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_vector_pop_back.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_pop_back(gas_params: PopBackGasParameters) -> NativeFunction {
@@ -213,14 +253,22 @@ pub fn native_destroy_empty(
     ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(ty_args.len() == 1);
     debug_assert!(args.len() == 1);
 
     let v = pop_arg!(args, Vector);
-    NativeResult::map_partial_vm_result_empty(
+    let r = NativeResult::map_partial_vm_result_empty(
         gas_params.base,
         v.destroy_empty(&ty_args[0]).map_err(native_error_to_abort),
-    )
+    );
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_vector_destroy_empty.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_destroy_empty(gas_params: DestroyEmptyGasParameters) -> NativeFunction {
@@ -245,17 +293,25 @@ pub fn native_swap(
     ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(ty_args.len() == 1);
     debug_assert!(args.len() == 3);
 
     let idx2 = pop_arg!(args, u64) as usize;
     let idx1 = pop_arg!(args, u64) as usize;
     let r = pop_arg!(args, VectorRef);
-    NativeResult::map_partial_vm_result_empty(
+    let r = NativeResult::map_partial_vm_result_empty(
         gas_params.base,
         r.swap(idx1, idx2, &ty_args[0])
             .map_err(native_error_to_abort),
-    )
+    );
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_vector_swap.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_swap(gas_params: SwapGasParameters) -> NativeFunction {

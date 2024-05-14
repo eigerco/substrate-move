@@ -27,6 +27,9 @@ fn native_get(
     ty_args: Vec<Type>,
     arguments: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert_eq!(ty_args.len(), 1);
     debug_assert!(arguments.is_empty());
 
@@ -41,7 +44,12 @@ fn native_get(
 
     let cost = gas_params.base + gas_params.per_byte * NumBytes::new(type_name.len() as u64);
 
-    Ok(NativeResult::ok(cost, smallvec![type_name_val]))
+    let r = Ok(NativeResult::ok(cost, smallvec![type_name_val]));
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_type_name_get.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_get(gas_params: GetGasParameters) -> NativeFunction {

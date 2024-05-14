@@ -44,6 +44,9 @@ fn native_check_utf8(
     _ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(args.len() == 1);
     let s_arg = pop_arg!(args, VectorRef);
     let s_ref = s_arg.as_bytes_ref();
@@ -52,7 +55,12 @@ fn native_check_utf8(
 
     let cost = gas_params.base + gas_params.per_byte * NumBytes::new(s_ref.as_slice().len() as u64);
 
-    NativeResult::map_partial_vm_result_one(cost, Ok(Value::bool(ok)))
+    let r = NativeResult::map_partial_vm_result_one(cost, Ok(Value::bool(ok)));
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_string_check_utf8.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_check_utf8(gas_params: CheckUtf8GasParameters) -> NativeFunction {
@@ -80,6 +88,9 @@ fn native_is_char_boundary(
     _ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(args.len() == 2);
     let i = pop_arg!(args, u64);
     let s_arg = pop_arg!(args, VectorRef);
@@ -88,7 +99,12 @@ fn native_is_char_boundary(
         // This is safe because we guarantee the bytes to be utf8.
         core::str::from_utf8_unchecked(s_ref.as_slice()).is_char_boundary(i as usize)
     };
-    NativeResult::map_partial_vm_result_one(gas_params.base, Ok(Value::bool(ok)))
+    let r = NativeResult::map_partial_vm_result_one(gas_params.base, Ok(Value::bool(ok)));
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_string_is_char_boundary.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_is_char_boundary(gas_params: IsCharBoundaryGasParameters) -> NativeFunction {
@@ -117,6 +133,9 @@ fn native_sub_string(
     _ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(args.len() == 3);
     let j = pop_arg!(args, u64) as usize;
     let i = pop_arg!(args, u64) as usize;
@@ -135,7 +154,12 @@ fn native_sub_string(
     let v = Value::vector_u8(s_str[i..j].as_bytes().iter().cloned());
 
     let cost = gas_params.base + gas_params.per_byte * NumBytes::new((j - i) as u64);
-    NativeResult::map_partial_vm_result_one(cost, Ok(v))
+    let r = NativeResult::map_partial_vm_result_one(cost, Ok(v));
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_string_sub_string.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_sub_string(gas_params: SubStringGasParameters) -> NativeFunction {
@@ -165,6 +189,9 @@ fn native_index_of(
     _ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(args.len() == 2);
     let r_arg = pop_arg!(args, VectorRef);
     let r_ref = r_arg.as_bytes_ref();
@@ -181,7 +208,12 @@ fn native_index_of(
     let cost = gas_params.base
         + gas_params.per_byte_pattern * NumBytes::new(r_str.len() as u64)
         + gas_params.per_byte_searched * NumBytes::new(pos as u64);
-    NativeResult::map_partial_vm_result_one(cost, Ok(Value::u64(pos as u64)))
+    let r = NativeResult::map_partial_vm_result_one(cost, Ok(Value::u64(pos as u64)));
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_string_index_of.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_index_of(gas_params: IndexOfGasParameters) -> NativeFunction {

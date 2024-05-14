@@ -36,6 +36,9 @@ fn native_sha2_256(
     _ty_args: Vec<Type>,
     mut arguments: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(_ty_args.is_empty());
     debug_assert!(arguments.len() == 1);
 
@@ -49,10 +52,15 @@ fn native_sha2_256(
             );
 
     let hash_vec = Sha256::digest(hash_arg.as_slice()).to_vec();
-    Ok(NativeResult::ok(
+    let r = Ok(NativeResult::ok(
         cost,
         smallvec![Value::vector_u8(hash_vec)],
-    ))
+    ));
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_hash_sha2_256.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_sha2_256(gas_params: Sha2_256GasParameters) -> NativeFunction {
@@ -83,6 +91,9 @@ fn native_sha3_256(
     _ty_args: Vec<Type>,
     mut arguments: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(_ty_args.is_empty());
     debug_assert!(arguments.len() == 1);
 
@@ -96,10 +107,15 @@ fn native_sha3_256(
             );
 
     let hash_vec = Sha3_256::digest(hash_arg.as_slice()).to_vec();
-    Ok(NativeResult::ok(
+    let r = Ok(NativeResult::ok(
         cost,
         smallvec![Value::vector_u8(hash_vec)],
-    ))
+    ));
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_hash_sha3_256.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_sha3_256(gas_params: Sha3_256GasParameters) -> NativeFunction {

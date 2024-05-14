@@ -31,6 +31,9 @@ pub fn native_transfer(
     ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
     debug_assert!(ty_args.is_empty());
     debug_assert!(args.len() == 3);
 
@@ -41,7 +44,12 @@ pub fn native_transfer(
     let src = src.address()?;
     let ret = context.transfer(src, dst, amount)?;
 
-    NativeResult::map_partial_vm_result_one(gas_params.base, Ok(Value::bool(ret)))
+    let r = NativeResult::map_partial_vm_result_one(gas_params.base, Ok(Value::bool(ret)));
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_balance_transfer.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_transfer(gas_params: TransferGasParameters) -> NativeFunction {
@@ -69,6 +77,10 @@ pub fn native_cheque_amount(
     ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
+    debug_assert!(ty_args.is_empty());
     debug_assert!(ty_args.is_empty());
     debug_assert!(args.len() == 1);
 
@@ -76,7 +88,12 @@ pub fn native_cheque_amount(
 
     let ret = context.cheque_amount(account_addr)?;
 
-    NativeResult::map_partial_vm_result_one(gas_params.base, Ok(Value::u128(ret)))
+    let r = NativeResult::map_partial_vm_result_one(gas_params.base, Ok(Value::u128(ret)));
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_balance_cheque_amount.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_cheque_amount(gas_params: ChequeAmountGasParameters) -> NativeFunction {
@@ -104,6 +121,10 @@ pub fn native_total_amount(
     ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult> {
+    use std::io::Write;
+    let now = std::time::Instant::now();
+
+    debug_assert!(ty_args.is_empty());
     debug_assert!(ty_args.is_empty());
     debug_assert!(args.len() == 1);
 
@@ -111,7 +132,12 @@ pub fn native_total_amount(
 
     let ret = context.total_amount(account_addr)?;
 
-    NativeResult::map_partial_vm_result_one(gas_params.base, Ok(Value::u128(ret)))
+    let r = NativeResult::map_partial_vm_result_one(gas_params.base, Ok(Value::u128(ret)));
+
+    let time = now.elapsed();
+    let mut file = std::fs::OpenOptions::new().create(true).append(true).open("costs_balance_total_amount.txt").unwrap();
+    file.write_all(format!("{}\n", time.as_nanos()).as_bytes()).unwrap();
+    r
 }
 
 pub fn make_native_total_amount(gas_params: TotalAmountGasParameters) -> NativeFunction {

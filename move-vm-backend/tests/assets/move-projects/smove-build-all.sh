@@ -10,6 +10,7 @@ build_dir=(
     "depends_on__using_stdlib_full"
     "depends_on__using_stdlib_natives"
     "empty"
+    "gas-costs"
     "simple_scripts"
     "using_stdlib_full"
     "substrate_balance"

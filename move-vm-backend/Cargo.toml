@@ -23,6 +23,7 @@ hashbrown = { version = "0.14", default-features = false, features = ["ahash"] }
 
 [dev-dependencies]
 move-vm-test-utils = { path = "../language/move-vm/test-utils" }
+force_remove = { version = "0.1.1" }
 
 [features]
 default = ["std"]
