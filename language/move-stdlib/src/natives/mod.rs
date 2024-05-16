@@ -9,6 +9,7 @@ pub mod event;
 pub mod hash;
 pub mod signer;
 pub mod string;
+pub mod substrate_hash;
 pub mod type_name;
 #[cfg(feature = "testing")]
 pub mod unit_test;
@@ -29,6 +30,7 @@ pub struct GasParameters {
     pub type_name: type_name::GasParameters,
     pub vector: vector::GasParameters,
     pub balance: balance::GasParameters,
+    pub substrate_hash: substrate_hash::GasParameters,
 
     #[cfg(feature = "testing")]
     pub unit_test: unit_test::GasParameters,
@@ -99,6 +101,32 @@ impl GasParameters {
                 cheque_amount: balance::ChequeAmountGasParameters { base: 0.into() },
                 total_amount: balance::TotalAmountGasParameters { base: 0.into() },
             },
+            substrate_hash: substrate_hash::GasParameters {
+                sip_hash: substrate_hash::SipHashGasParameters {
+                    base: 0.into(),
+                    per_byte: 0.into(),
+                },
+                blake2b_256: substrate_hash::Blake2b256GasParameters {
+                    base: 0.into(),
+                    per_byte: 0.into(),
+                },
+                ripemd160: substrate_hash::Ripemd160HashGasParameters {
+                    base: 0.into(),
+                    per_byte: 0.into(),
+                },
+                keccak256: substrate_hash::Keccak256HashGasParameters {
+                    base: 0.into(),
+                    per_byte: 0.into(),
+                },
+                sha2_512: substrate_hash::Sha2_512GasParameters {
+                    base: 0.into(),
+                    per_byte: 0.into(),
+                },
+                sha3_512: substrate_hash::Sha3_512GasParameters {
+                    base: 0.into(),
+                    per_byte: 0.into(),
+                },
+            },
             #[cfg(feature = "testing")]
             unit_test: unit_test::GasParameters {
                 create_signers_for_testing: unit_test::CreateSignersForTestingGasParameters {
@@ -131,6 +159,10 @@ pub fn all_natives(
     add_natives!("type_name", type_name::make_all(gas_params.type_name));
     add_natives!("vector", vector::make_all(gas_params.vector));
     add_natives!("balance", balance::make_all(gas_params.balance));
+    add_natives!(
+        "substrate_hash",
+        substrate_hash::make_all(gas_params.substrate_hash)
+    );
     #[cfg(feature = "testing")]
     {
         add_natives!("unit_test", unit_test::make_all(gas_params.unit_test));

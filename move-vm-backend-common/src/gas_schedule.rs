@@ -231,6 +231,32 @@ lazy_static! {
                 cheque_amount: move_stdlib::natives::balance::ChequeAmountGasParameters { base: 3892.into() },
                 total_amount: move_stdlib::natives::balance::TotalAmountGasParameters { base: 3769.into() },
             },
+            substrate_hash: move_stdlib::natives::substrate_hash::GasParameters {
+                sip_hash: move_stdlib::natives::substrate_hash::SipHashGasParameters {
+                    base: 3676.into(),
+                    per_byte: 183.into()
+                },
+                blake2b_256: move_stdlib::natives::substrate_hash::Blake2b256GasParameters {
+                    base: 6433.into(),
+                    per_byte: 55.into()
+                },
+                ripemd160: move_stdlib::natives::substrate_hash::Ripemd160HashGasParameters {
+                    base: 11028.into(),
+                    per_byte: 183.into()
+                },
+                keccak256: move_stdlib::natives::substrate_hash::Keccak256HashGasParameters {
+                    base: 14704.into(),
+                    per_byte: 165.into()
+                },
+                sha2_512: move_stdlib::natives::substrate_hash::Sha2_512GasParameters {
+                    base: 11910.into(),
+                    per_byte: 220.into()
+                },
+                sha3_512: move_stdlib::natives::substrate_hash::Sha3_512GasParameters {
+                    base: 16542.into(),
+                    per_byte: 183.into()
+                },
+            },
             #[cfg(feature = "testing")]
             unit_test: move_stdlib::natives::unit_test::GasParameters {
                 create_signers_for_testing: move_stdlib::natives::unit_test::CreateSignersForTestingGasParameters {
