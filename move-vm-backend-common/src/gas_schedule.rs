@@ -190,8 +190,8 @@ lazy_static! {
             },
             type_name: move_stdlib::natives::type_name::GasParameters {
                 get: move_stdlib::natives::type_name::GetGasParameters {
-                    base: 1000.into(),
-                    per_byte: 1000.into(),
+                    base: 2805.into(),
+                    per_byte: 98.into(),
                 },
             },
             signer: move_stdlib::natives::signer::GasParameters {
@@ -213,22 +213,23 @@ lazy_static! {
                     per_byte_searched: 36.into(),
                 },
             },
+            // vectors will be charged by bytecode operations (see table above).
             vector: move_stdlib::natives::vector::GasParameters {
-                empty: move_stdlib::natives::vector::EmptyGasParameters { base: 1000.into() },
-                length: move_stdlib::natives::vector::LengthGasParameters { base: 1000.into() },
+                empty: move_stdlib::natives::vector::EmptyGasParameters { base: 0.into() },
+                length: move_stdlib::natives::vector::LengthGasParameters { base: 0.into() },
                 push_back: move_stdlib::natives::vector::PushBackGasParameters {
-                    base: 1000.into(),
-                    legacy_per_abstract_memory_unit: 1000.into(),
+                    base: 0.into(),
+                    legacy_per_abstract_memory_unit: 0.into(),
                 },
-                borrow: move_stdlib::natives::vector::BorrowGasParameters { base: 1000.into() },
-                pop_back: move_stdlib::natives::vector::PopBackGasParameters { base: 1000.into() },
-                destroy_empty: move_stdlib::natives::vector::DestroyEmptyGasParameters { base: 1000.into() },
-                swap: move_stdlib::natives::vector::SwapGasParameters { base: 1000.into() },
+                borrow: move_stdlib::natives::vector::BorrowGasParameters { base: 0.into() },
+                pop_back: move_stdlib::natives::vector::PopBackGasParameters { base: 0.into() },
+                destroy_empty: move_stdlib::natives::vector::DestroyEmptyGasParameters { base: 0.into() },
+                swap: move_stdlib::natives::vector::SwapGasParameters { base: 0.into() },
             },
             balance: move_stdlib::natives::balance::GasParameters {
-                transfer: move_stdlib::natives::balance::TransferGasParameters { base: 1000.into() },
-                cheque_amount: move_stdlib::natives::balance::ChequeAmountGasParameters { base: 1000.into() },
-                total_amount: move_stdlib::natives::balance::TotalAmountGasParameters { base: 1000.into() },
+                transfer: move_stdlib::natives::balance::TransferGasParameters { base: 12381.into() },
+                cheque_amount: move_stdlib::natives::balance::ChequeAmountGasParameters { base: 3892.into() },
+                total_amount: move_stdlib::natives::balance::TotalAmountGasParameters { base: 3769.into() },
             },
             #[cfg(feature = "testing")]
             unit_test: move_stdlib::natives::unit_test::GasParameters {
