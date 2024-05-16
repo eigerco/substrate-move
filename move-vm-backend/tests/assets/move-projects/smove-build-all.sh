@@ -13,6 +13,7 @@ build_dir=(
     "simple_scripts"
     "using_stdlib_full"
     "substrate_balance"
+    "substrate_stdlib_hash"
 )
 bundle_dir=("using_stdlib_natives")
 

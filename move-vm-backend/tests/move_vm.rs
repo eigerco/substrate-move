@@ -472,7 +472,7 @@ fn publishing_fails_with_insufficient_gas() {
         let stdlib = move_stdlib::move_stdlib_bundle();
 
         let gas = GasStrategy::Metered(GasAmount::new(1).unwrap());
-        let result = vm.publish_module_bundle(&stdlib, ADDR_STD, gas);
+        let result = vm.publish_module_bundle(stdlib, ADDR_STD, gas);
 
         assert!(
             result.is_err(),
@@ -502,7 +502,7 @@ fn script_execution_fails_with_insufficient_gas() {
     let gas = GasStrategy::Unmetered;
 
     let stdlib = move_stdlib::move_stdlib_bundle();
-    let result = vm.publish_module_bundle(&stdlib, ADDR_STD, gas);
+    let result = vm.publish_module_bundle(stdlib, ADDR_STD, gas);
 
     assert!(result.is_ok(), "failed to publish the stdlib bundle");
 
@@ -557,7 +557,7 @@ fn manually_publish_substrate_stdlib_bundle() {
     let gas = GasStrategy::Unmetered;
 
     let stdlib = move_stdlib::substrate_stdlib_bundle();
-    let result = vm.publish_module_bundle(&stdlib, ADDR_STD, gas);
+    let result = vm.publish_module_bundle(stdlib, ADDR_STD, gas);
     assert!(result.is_ok(), "failed to publish the substrate stdlib");
 }
 
@@ -645,4 +645,90 @@ fn publish_module_with_base58_address() {
         result.gas_used < provided_gas_amount.inner(),
         "invalid gas calulation"
     );
+}
+
+#[test]
+fn substrate_stdlib_sip_hash_test() {
+    let gas = GasStrategy::Unmetered;
+    let store = store_preloaded_with_genesis_cfg();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
+
+    // Here's the precalculation for the hash in the script.
+    // use core::hash::Hasher;
+    // let mut hasher = siphasher::sip::SipHasher::new();
+    // let array: &[u8] = &[1, 2, 3];
+    // hasher.write(&array);
+    // println!("{}", hasher.finish());
+
+    // tmp:
+    let script = read_script_bytes_from_project("substrate_stdlib_hash", "sip_hash_test");
+    let type_args: Vec<TypeTag> = vec![];
+    let params: Vec<&[u8]> = vec![];
+    let result = vm.execute_script(&script, type_args, params, gas);
+    assert!(result.is_ok(), "script execution failed");
+}
+
+#[test]
+fn substrate_stdlib_blake2b_256_test() {
+    let gas = GasStrategy::Unmetered;
+    let store = store_preloaded_with_genesis_cfg();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
+
+    let script = read_script_bytes_from_project("substrate_stdlib_hash", "blake2b_256_test");
+    let type_args: Vec<TypeTag> = vec![];
+    let params: Vec<&[u8]> = vec![];
+    let result = vm.execute_script(&script, type_args, params, gas);
+    assert!(result.is_ok(), "script execution failed");
+}
+
+#[test]
+fn substrate_stdlib_ripemd160_test() {
+    let gas = GasStrategy::Unmetered;
+    let store = store_preloaded_with_genesis_cfg();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
+
+    let script = read_script_bytes_from_project("substrate_stdlib_hash", "ripemd160_test");
+    let type_args: Vec<TypeTag> = vec![];
+    let params: Vec<&[u8]> = vec![];
+    let result = vm.execute_script(&script, type_args, params, gas);
+    assert!(result.is_ok(), "script execution failed");
+}
+
+#[test]
+fn substrate_stdlib_keccak256_test() {
+    let gas = GasStrategy::Unmetered;
+    let store = store_preloaded_with_genesis_cfg();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
+
+    let script = read_script_bytes_from_project("substrate_stdlib_hash", "keccak256_test");
+    let type_args: Vec<TypeTag> = vec![];
+    let params: Vec<&[u8]> = vec![];
+    let result = vm.execute_script(&script, type_args, params, gas);
+    assert!(result.is_ok(), "script execution failed");
+}
+
+#[test]
+fn substrate_stdlib_sha2_512_test() {
+    let gas = GasStrategy::Unmetered;
+    let store = store_preloaded_with_genesis_cfg();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
+
+    let script = read_script_bytes_from_project("substrate_stdlib_hash", "sha2_512_test");
+    let type_args: Vec<TypeTag> = vec![];
+    let params: Vec<&[u8]> = vec![];
+    let result = vm.execute_script(&script, type_args, params, gas);
+    assert!(result.is_ok(), "script execution failed");
+}
+
+#[test]
+fn substrate_stdlib_sha3_512_test() {
+    let gas = GasStrategy::Unmetered;
+    let store = store_preloaded_with_genesis_cfg();
+    let vm = Mvm::new(store, BalanceMock::new()).unwrap();
+
+    let script = read_script_bytes_from_project("substrate_stdlib_hash", "sha3_512_test");
+    let type_args: Vec<TypeTag> = vec![];
+    let params: Vec<&[u8]> = vec![];
+    let result = vm.execute_script(&script, type_args, params, gas);
+    assert!(result.is_ok(), "script execution failed");
 }
