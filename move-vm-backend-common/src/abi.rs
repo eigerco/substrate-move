@@ -16,7 +16,7 @@ use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 
 #[derive(
-    Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
+    Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
 )]
 /// Move module ABI.
 pub struct ModuleAbi {
@@ -31,7 +31,7 @@ pub struct ModuleAbi {
 }
 
 #[derive(
-    Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
+    Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
 )]
 /// Move struct definition.
 pub struct Struct {
@@ -46,7 +46,7 @@ pub struct Struct {
 }
 
 #[derive(
-    Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
+    Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
 )]
 /// Represntation for a struct element.
 pub struct Field {
@@ -57,7 +57,7 @@ pub struct Field {
 }
 
 #[derive(
-    Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
+    Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
 )]
 /// Generic type abilities.
 pub struct TypeAbilities {
@@ -82,7 +82,7 @@ impl From<&AbilitySet> for TypeAbilities {
 }
 
 #[derive(
-    Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
+    Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
 )]
 /// Move type abilities.
 pub enum TypeAbility {
@@ -93,7 +93,7 @@ pub enum TypeAbility {
 }
 
 #[derive(
-    Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
+    Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
 )]
 /// Move type.
 pub enum Type {
@@ -114,7 +114,7 @@ pub enum Type {
 }
 
 #[derive(
-    Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
+    Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
 )]
 // TODO: Can we merge this one with the main struct definition.
 /// Simple struct definition for type.
@@ -128,7 +128,7 @@ pub struct StructDef {
 }
 
 #[derive(
-    Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
+    Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
 )]
 /// Move function.
 pub struct Function {
@@ -145,7 +145,7 @@ pub struct Function {
 }
 
 #[derive(
-    Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
+    Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
 )]
 /// Function visibility.
 // Private not needed since it's not accessible to outer modules.
@@ -168,7 +168,7 @@ impl From<&Visibility> for FunctionVisibility {
 }
 
 #[derive(
-    Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
+    Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq, TypeInfo, Decode, Encode,
 )]
 /// Friend module.
 pub struct Friend {
