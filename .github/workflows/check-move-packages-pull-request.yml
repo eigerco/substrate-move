@@ -42,6 +42,5 @@ jobs:
       - name: Build move-cli
         run: cargo build --release -p move-cli
 
-      # tmp until the issue is resolved
-      #- name: Run move-cli tests
-      #  run: cargo test -p move-cli
+      - name: Run move-cli tests
+        run: cargo test -p move-cli
