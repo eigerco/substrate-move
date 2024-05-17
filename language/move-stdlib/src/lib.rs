@@ -7,9 +7,6 @@
 #[macro_use]
 extern crate alloc;
 
-#[cfg(test)]
-mod tests;
-
 #[cfg(feature = "std")]
 pub mod utils;
 

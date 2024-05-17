@@ -46,6 +46,6 @@ fn run_tests_for_pkg(path_to_pkg: impl Into<String>, include_nursery_natives: bo
 
 #[test]
 fn move_unit_tests() {
-    run_tests_for_pkg(".", false);
+    run_tests_for_pkg("MoveStdlib", false);
     run_tests_for_pkg("nursery", true);
 }
