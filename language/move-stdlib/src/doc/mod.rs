@@ -9,7 +9,7 @@ use std::{collections::BTreeMap, path::PathBuf};
 
 const MODULES_DIR: &str = "MoveStdlib/sources";
 const NURSERY_DIR: &str = "nursery";
-const DOCS_DIR: &str = "docs";
+const DOCS_DIR: &str = "MoveStdlib/doc";
 const NURSERY_DOCS_DIR: &str = "nursery/docs";
 const ERRMAP_FILE: &str = "error_description.errmap";
 
