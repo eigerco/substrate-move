@@ -32,3 +32,4 @@ jobs:
 
       - name: Run all tests
         run: cargo test
+
