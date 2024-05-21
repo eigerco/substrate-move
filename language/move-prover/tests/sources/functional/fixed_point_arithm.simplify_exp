@@ -40,11 +40,11 @@ error: post-condition does not hold
     =         x = <redacted>
     =         y = <redacted>
     =     at tests/sources/functional/fixed_point_arithm.move:105: mul_div_incorrect
-    =     at ../move-stdlib/sources/FixedPoint32.move:150: get_raw_value
+    =     at ../move-stdlib/MoveStdlib/sources/FixedPoint32.move:150: get_raw_value
     =         num = <redacted>
-    =     at ../move-stdlib/sources/FixedPoint32.move:151: get_raw_value
+    =     at ../move-stdlib/MoveStdlib/sources/FixedPoint32.move:151: get_raw_value
     =         result = <redacted>
-    =     at ../move-stdlib/sources/FixedPoint32.move:152: get_raw_value
+    =     at ../move-stdlib/MoveStdlib/sources/FixedPoint32.move:152: get_raw_value
     =         y_raw_val = <redacted>
     =     at tests/sources/functional/fixed_point_arithm.move:106: mul_div_incorrect
     =         z = <redacted>
@@ -63,11 +63,11 @@ error: post-condition does not hold
     =         x = <redacted>
     =         y = <redacted>
     =     at tests/sources/functional/fixed_point_arithm.move:105: mul_div_incorrect
-    =     at ../move-stdlib/sources/FixedPoint32.move:150: get_raw_value
+    =     at ../move-stdlib/MoveStdlib/sources/FixedPoint32.move:150: get_raw_value
     =         num = <redacted>
-    =     at ../move-stdlib/sources/FixedPoint32.move:151: get_raw_value
+    =     at ../move-stdlib/MoveStdlib/sources/FixedPoint32.move:151: get_raw_value
     =         result = <redacted>
-    =     at ../move-stdlib/sources/FixedPoint32.move:152: get_raw_value
+    =     at ../move-stdlib/MoveStdlib/sources/FixedPoint32.move:152: get_raw_value
     =         y_raw_val = <redacted>
     =     at tests/sources/functional/fixed_point_arithm.move:106: mul_div_incorrect
     =         z = <redacted>
