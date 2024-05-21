@@ -43,6 +43,7 @@ toml = "0.5.8"
 
 [dev-dependencies]
 datatest-stable = "0.1.1"
+move-stdlib = { path = "../move-stdlib", features = ["stdlib-bytecode"] }
 move-prover-test-utils = { path = "test-utils" }
 shell-words = "1.0.0"
 walkdir = "2.3.1"
