@@ -2,8 +2,8 @@
 
 # MoveVM for Substrate
 
+This repository is part of the [Pallet Move](https://github.com/eigerco/pallet-move) project, which enables users to write smart contracts in Substrate-based blockchains with the Move language.
 This is a modified MoveVM fork for the use of MoveVM in the [pallet-move] Substrate repo.
-Please check the [pallet-move] repository to learn more about this project.
 
 ## Requirements
 
@@ -40,6 +40,13 @@ _Note: the feature flag `build-move-projects-for-test` needs to be provided only
 ## Open / Planned Points
 - clean clippy warnings for the latest rustc compiler
 - improve get_resource API (input params and the output value)
+
+## See also
+
+- [Pallet Move](https://github.com/eigerco/pallet-move) - Main repo containing the Move pallet.
+- [Move-stdlib](https://github.com/eigerco/move-stdlib) - Provides elementary Move functions in Move smart contracts. 
+- [Smove](https://github.com/eigerco/smove) - Handles the gas estimation, the serialization of script and module transactions, and the inspection of the module's ABIs.
+- [substrate-stdlib](https://github.com/eigerco/substrate-stdlib) - Provides elementary Substrate functions in Move smart contracts.
 
 ## License
 
