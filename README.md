@@ -46,3 +46,10 @@ _Note: the feature flag `build-move-projects-for-test` needs to be provided only
 Move is licensed as [Apache 2.0](https://github.com/move-language/move/blob/main/LICENSE).
 
 [pallet-move]: https://github.com/eigerco/pallet-move
+
+## About [Eiger](https://www.eiger.co)
+
+We are engineers. We contribute to various ecosystems by building low level implementations and core components. We believe in Move and in Polkadot and wanted to bring them together. Read more about this project on [our blog](https://www.eiger.co/blog/eiger-brings-move-to-polkadot).
+
+Contact us at hello@eiger.co
+Follow us on [X/Twitter](https://x.com/eiger_co)
