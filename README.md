@@ -2,8 +2,8 @@
 
 # MoveVM for Substrate
 
-This repository is part of the [pallet-move][pallet-move] project, which enables users to write smart contracts in Substrate-based blockchains with the Move language.
-This is a modified MoveVM fork for the use of MoveVM in the [pallet-move][pallet-move] Substrate repo.
+This repository is part of the [pallet-move] project, which enables users to write smart contracts in Substrate-based blockchains with the Move language.
+This is a modified MoveVM fork for the use of MoveVM in the [pallet-move] Substrate repo.
 
 ## Requirements
 
@@ -18,7 +18,7 @@ For the initial development setup, run the script:
 
 ### Design
 
-[pallet-move][pallet-move] uses the `move-vm-backend` to interact with the MoveVM.
+[pallet-move] uses the `move-vm-backend` to interact with the MoveVM.
 
 The integral part of MoveVM functionality still lies within the `language` directory and contains only the necessary modifications which make the MoveVM operable within the Substrate framework.
 
@@ -43,10 +43,10 @@ _Note: the feature flag `build-move-projects-for-test` needs to be provided only
 
 ## See also
 
-- [pallet-move][pallet-move] - Main repo containing the Move pallet.
-- [move-stdlib][move-stdlib] - Provides elementary Move functions in Move smart contracts. 
-- [smove][smove] - Handles the gas estimation, the serialization of script and module transactions, and the inspection of the module's ABIs.
-- [substrate-stdlib][substrate-stdlib] - Provides elementary Substrate functions in Move smart contracts.
+- [pallet-move] - Main repo containing the Move pallet.
+- [move-stdlib] - Provides elementary Move functions in Move smart contracts. 
+- [smove] - Handles the gas estimation, the serialization of script and module transactions, and the inspection of the module's ABIs.
+- [substrate-stdlib] - Provides elementary Substrate functions in Move smart contracts.
 
 ## License
 
