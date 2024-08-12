@@ -2,12 +2,12 @@
 
 # MoveVM for Substrate
 
+This repository is part of the [pallet-move] project, which enables users to write smart contracts in Substrate-based blockchains with the Move language.
 This is a modified MoveVM fork for the use of MoveVM in the [pallet-move] Substrate repo.
-Please check the [pallet-move] repository to learn more about this project.
 
 ## Requirements
 
-`smove` is a package manager for Move language in Substrate. Follow the [instructions](https://github.com/eigerco/smove) to install it.
+`smove` is a package manager for Move language in Substrate. Follow the [instructions][smove] to install it.
 
 ## Development
 
@@ -41,8 +41,26 @@ _Note: the feature flag `build-move-projects-for-test` needs to be provided only
 - clean clippy warnings for the latest rustc compiler
 - improve get_resource API (input params and the output value)
 
+## See also
+
+- [pallet-move] - Main repo containing the Move pallet.
+- [move-stdlib] - Provides elementary Move functions in Move smart contracts. 
+- [smove] - Handles the gas estimation, the serialization of script and module transactions, and the inspection of the module's ABIs.
+- [substrate-stdlib] - Provides elementary Substrate functions in Move smart contracts.
+
 ## License
 
 Move is licensed as [Apache 2.0](https://github.com/move-language/move/blob/main/LICENSE).
 
+## About [Eiger](https://www.eiger.co)
+
+We are engineers. We contribute to various ecosystems by building low level implementations and core components. We believe in Move and in Polkadot and wanted to bring them together. Read more about this project on [our blog](https://www.eiger.co/blog/eiger-brings-move-to-polkadot).
+
+Contact us at hello@eiger.co
+Follow us on [X/Twitter](https://x.com/eiger_co)
+
+
+[move-stdlib]: https://github.com/eigerco/move-stdlib
 [pallet-move]: https://github.com/eigerco/pallet-move
+[smove]: https://github.com/eigerco/smove
+[substrate-stdlib]: https://github.com/eigerco/substrate-stdlib
