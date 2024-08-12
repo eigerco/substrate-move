@@ -2,12 +2,12 @@
 
 # MoveVM for Substrate
 
-This repository is part of the [pallet-move](https://github.com/eigerco/pallet-move) project, which enables users to write smart contracts in Substrate-based blockchains with the Move language.
-This is a modified MoveVM fork for the use of MoveVM in the [pallet-move] Substrate repo.
+This repository is part of the [pallet-move][pallet-move] project, which enables users to write smart contracts in Substrate-based blockchains with the Move language.
+This is a modified MoveVM fork for the use of MoveVM in the [pallet-move][pallet-move] Substrate repo.
 
 ## Requirements
 
-`smove` is a package manager for Move language in Substrate. Follow the [instructions](https://github.com/eigerco/smove) to install it.
+`smove` is a package manager for Move language in Substrate. Follow the [instructions][smove] to install it.
 
 ## Development
 
@@ -18,7 +18,7 @@ For the initial development setup, run the script:
 
 ### Design
 
-[pallet-move] uses the `move-vm-backend` to interact with the MoveVM.
+[pallet-move][pallet-move] uses the `move-vm-backend` to interact with the MoveVM.
 
 The integral part of MoveVM functionality still lies within the `language` directory and contains only the necessary modifications which make the MoveVM operable within the Substrate framework.
 
@@ -43,16 +43,14 @@ _Note: the feature flag `build-move-projects-for-test` needs to be provided only
 
 ## See also
 
-- [pallet-move](https://github.com/eigerco/pallet-move) - Main repo containing the Move pallet.
-- [move-stdlib](https://github.com/eigerco/move-stdlib) - Provides elementary Move functions in Move smart contracts. 
-- [smove](https://github.com/eigerco/smove) - Handles the gas estimation, the serialization of script and module transactions, and the inspection of the module's ABIs.
-- [substrate-stdlib](https://github.com/eigerco/substrate-stdlib) - Provides elementary Substrate functions in Move smart contracts.
+- [pallet-move][pallet-move] - Main repo containing the Move pallet.
+- [move-stdlib][move-stdlib] - Provides elementary Move functions in Move smart contracts. 
+- [smove][smove] - Handles the gas estimation, the serialization of script and module transactions, and the inspection of the module's ABIs.
+- [substrate-stdlib][substrate-stdlib] - Provides elementary Substrate functions in Move smart contracts.
 
 ## License
 
 Move is licensed as [Apache 2.0](https://github.com/move-language/move/blob/main/LICENSE).
-
-[pallet-move]: https://github.com/eigerco/pallet-move
 
 ## About [Eiger](https://www.eiger.co)
 
@@ -60,3 +58,9 @@ We are engineers. We contribute to various ecosystems by building low level impl
 
 Contact us at hello@eiger.co
 Follow us on [X/Twitter](https://x.com/eiger_co)
+
+
+[move-stdlib]: https://github.com/eigerco/move-stdlib
+[pallet-move]: https://github.com/eigerco/pallet-move
+[smove]: https://github.com/eigerco/smove
+[substrate-stdlib]: https://github.com/eigerco/substrate-stdlib
